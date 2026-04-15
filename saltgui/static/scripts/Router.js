@@ -73,6 +73,8 @@ export class Router {
 
     Router.updateMainMenu();
 
+    // In embedded ingress mode, the login callback path may not run.
+    // Load session-dependent settings (including theme preference) when already authenticated.
     if (Utils.getStorageItem("session", "login_response") !== null) {
       Router.loginPage.login.bootstrapSession();
     }
