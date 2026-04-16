@@ -348,6 +348,9 @@ export class LoginPanel extends Panel {
     // or determine visibility of menu items
     wheelConfigValuesPromise.then((pWheelConfigValuesData) => {
       LoginPanel._handleLoginWheelConfigValues(pWheelConfigValuesData);
+      if (globalThis.SaltGUITheme && typeof globalThis.SaltGUITheme.applyTheme === "function") {
+        globalThis.SaltGUITheme.applyTheme();
+      }
       Router.updateMainMenu();
       return true;
     }, () => false);
@@ -399,9 +402,6 @@ export class LoginPanel extends Panel {
 
     Utils.setStorageItem("session", "theme", theme);
     Utils.setStorageItem("local", "theme_default", theme);
-    if (globalThis.SaltGUITheme && typeof globalThis.SaltGUITheme.applyTheme === "function") {
-      globalThis.SaltGUITheme.applyTheme();
-    }
 
     // store for later use
 
