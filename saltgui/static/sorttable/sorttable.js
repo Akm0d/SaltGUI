@@ -1,37 +1,36 @@
-/*
-  SortTable
-  version 2
-  7th April 2007
-  Stuart Langridge, http://www.kryogenix.org/code/browser/sorttable/
+/**
+ * SortTable
+ * version 2 (Refactored)
+ *
+ * Instructions:
+ * Add class="sortable" to any table you'd like to make sortable
+ * Click on the headers to sort
+ *
+ * Original by Stuart Langridge, http://www.kryogenix.org/code/browser/sorttable/
+ * Refactored for SaltGUI modernization.
+ */
 
-  Instructions:
-  Add class="sortable" to any table you'd like to make sortable
-  Click on the headers to sort
-
-  Thanks to many, many people for contributions and suggestions.
-  Licenced as X11: http://www.kryogenix.org/code/browser/licence.html
-  This basically means: do what you want with it.
-
-  ErwinD: heavily reduced to match other SaltGUI code
-*/
-
-import {Character} from "../scripts/Character.js";
+import { Character } from "../scripts/Character.js";
 
 export class SortTable {
 
-  static makeSortable (table) {
+  /**
+   * Initializes a table to be sortable.
+   * @param {HTMLTableElement} table 
+   */
+  static makeSortable(table) {
     // remove any previous sorting
-    let sortfwdind = table.querySelector('#sorttable_sortfwdind');
-    if (sortfwdind) { sortfwdind.parentNode.removeChild(sortfwdind); }
-    let sortrevind = table.querySelector('#sorttable_sortrevind');
-    if (sortrevind) { sortrevind.parentNode.removeChild(sortrevind); }
+    const sortfwdind = table.querySelector('#sorttable_sortfwdind');
+    if (sortfwdind) sortfwdind.remove();
+    const sortrevind = table.querySelector('#sorttable_sortrevind');
+    if (sortrevind) sortrevind.remove();
 
     if (table.getElementsByTagName('thead').length === 0) {
       // table doesn't have a tHead. Since it should have, create one and
       // put the first table row in it.
       const the = document.createElement('thead');
       the.appendChild(table.rows[0]);
-      table.insertBefore(the,table.firstChild);
+      table.insertBefore(the, table.firstChild);
     }
     // Safari doesn't support table.tHead, sigh
     if (table.tHead === null) table.tHead = table.getElementsByTagName('thead')[0];
@@ -40,44 +39,47 @@ export class SortTable {
 
     // work through each column and calculate its type
     const headrow = table.tHead.rows[0].cells;
-    for (let i=0; i<headrow.length; i++) {
+    for (let i = 0; i < headrow.length; i++) {
       // manually override the type with a sorttable_type attribute
       if (headrow[i].classList.contains("sorttable_sortable")) {
         headrow[i].sorttable_sortfunction = SortTable.sort_alpha;
         // make it clickable to sort
         headrow[i].sorttable_columnindex = i;
         headrow[i].sorttable_tbody = table.tBodies[0];
-        headrow[i].addEventListener("click", (clickEvent) =>
-          SortTable.innerSortFunction(headrow[i])
-        );
+        headrow[i].addEventListener("click", () => SortTable.innerSortFunction(headrow[i]));
       }
     }
   }
 
-  static innerSortFunction (clickElement) {
+  /**
+   * Handles the actual sorting logic when a header is clicked.
+   * @param {HTMLTableCellElement} clickElement 
+   */
+  static innerSortFunction(clickElement) {
     // remove sorttable_sorted classes
     let prev_sorttable_columnindex = -1;
     const theadrow = clickElement.parentNode;
-    for(const cell of theadrow.childNodes) {
+    for (const cell of theadrow.childNodes) {
       if (cell.nodeType === 1) { // an element
-        if(cell.className.includes("sorttable_sorted")) prev_sorttable_columnindex = cell.sorttable_columnindex;
+        if (cell.className.includes("sorttable_sorted")) prev_sorttable_columnindex = cell.sorttable_columnindex;
         cell.classList.remove("sorttable_sorted_reverse");
         cell.classList.remove("sorttable_sorted");
       }
     }
-    let sortfwdind = clickElement.parentElement.querySelector('#sorttable_sortfwdind');
-    if (sortfwdind) { sortfwdind.parentNode.removeChild(sortfwdind); }
-    let sortrevind = clickElement.parentElement.querySelector('#sorttable_sortrevind');
-    if (sortrevind) { sortrevind.parentNode.removeChild(sortrevind); }
+    const parent = clickElement.parentElement;
+    let sortfwdind = parent.querySelector('#sorttable_sortfwdind');
+    if (sortfwdind) sortfwdind.remove();
+    let sortrevind = parent.querySelector('#sorttable_sortrevind');
+    if (sortrevind) sortrevind.remove();
 
-    if(prev_sorttable_columnindex !== clickElement.sorttable_columnindex) {
+    if (prev_sorttable_columnindex !== clickElement.sorttable_columnindex) {
       // pretend reverse sorting when sorting on another column,
       // so that new sort order is normal
       sortfwdind = null;
     }
 
     const reverse = sortfwdind !== null;
-    if(sortfwdind) {
+    if (sortfwdind) {
       clickElement.classList.add("sorttable_sorted_reverse");
       sortrevind = document.createElement('span');
       sortrevind.id = "sorttable_sortrevind";
@@ -95,25 +97,25 @@ export class SortTable {
     // i.e., we "decorate" each row with the actual sort key,
     // sort based on the sort keys, and then put the rows back in order
     // which is a lot faster because you only do getInnerText once per row
-    const row_array = [];
     const col = clickElement.sorttable_columnindex;
     const rows = clickElement.sorttable_tbody.rows;
-    for (const row of rows) {
-      row_array[row_array.length] = [SortTable.getInnerText(row.cells[col]), row];
-    }
-    /* If you want a stable sort, uncomment the following line */
-    //SortTable.shaker_sort row_array, clickElement.sorttable_sortfunction
-    /* and comment out clickElement one */
+    const row_array = Array.from(rows).map(row => [SortTable.getInnerText(row.cells[col]), row]);
+    
     row_array.sort(clickElement.sorttable_sortfunction);
-    if(reverse) row_array.reverse();
+    if (reverse) row_array.reverse();
 
     const tb = clickElement.sorttable_tbody;
-    for (const row of row_array) {
-      tb.appendChild(row[1]);
+    for (const [_, row] of row_array) {
+      tb.appendChild(row);
     }
   }
 
-  static getInnerText (node) {
+  /**
+   * Extracts the sortable text from a node.
+   * @param {Node} node 
+   * @returns {string}
+   */
+  static getInnerText(node) {
     // gets the text we want to use for sorting for a cell.
     // strips leading and trailing whitespace.
     // this is *not* a generic getInnerText function; it's special to SortTable.
@@ -123,90 +125,92 @@ export class SortTable {
     if (!node) return "";
 
     const hasInputs = (typeof node.getElementsByTagName === 'function') &&
-                 node.getElementsByTagName('input').length;
+                   node.getElementsByTagName('input').length;
 
     if (node.getAttribute("sorttable_customkey") !== null) {
       return node.getAttribute("sorttable_customkey");
-    }
-    else if (typeof node.textContent !== 'undefined' && !hasInputs) {
-      return node.textContent.replace(/^\s+|\s+$/g, '');
-    }
-    else if (typeof node.innerText !== 'undefined' && !hasInputs) {
-      return node.innerText.replace(/^\s+|\s+$/g, '');
-    }
-    else if (typeof node.text !== 'undefined' && !hasInputs) {
-      return node.text.replace(/^\s+|\s+$/g, '');
-    }
-    else {
+    } else if (typeof node.textContent !== 'undefined' && !hasInputs) {
+      return node.textContent.trim();
+    } else if (typeof node.innerText !== 'undefined' && !hasInputs) {
+      return node.innerText.trim();
+    } else if (typeof node.text !== 'undefined' && !hasInputs) {
+      return node.text.trim();
+    } else {
       switch (node.nodeType) {
-        case 3:
+        case 3: // TEXT_NODE
           if (node.nodeName.toLowerCase() === 'input') {
-            return node.value.replace(/^\s+|\s+$/g, '');
+            return node.value.trim();
           }
-          return node.nodeValue.replace(/^\s+|\s+$/g, '');
-        case 4:
-          return node.nodeValue.replace(/^\s+|\s+$/g, '');
-        case 1:
-        case 11:
-          var innerText = '';
+          return node.nodeValue.trim();
+        case 4: // ELEMENT_NODE
+          return node.nodeValue.trim();
+        case 1: // ELEMENT_NODE
+        case 11: // DOCUMENT_FRAGMENT
+          let innerText = '';
           for (const childNode of node.childNodes) {
             innerText += SortTable.getInnerText(childNode);
           }
-          return innerText.replace(/^\s+|\s+$/g, '');
+          return innerText.trim();
         default:
           return '';
       }
     }
   }
 
-  static reverse (tbody) {
+  /**
+   * Reverses the rows in a tbody.
+   * @param {HTMLTableSectionElement} tbody 
+   */
+  static reverse(tbody) {
     // reverse the rows in a tbody
-    const newrows = [];
-    for (let i=0; i<tbody.rows.length; i++) {
-      newrows[newrows.length] = tbody.rows[i];
-    }
-    for (let i=newrows.length-1; i>=0; i--) {
-      tbody.appendChild(newrows[i]);
+    const rows = Array.from(tbody.rows);
+    for (let i = rows.length - 1; i >= 0; i--) {
+      tbody.appendChild(rows[i]);
     }
   }
 
-  /* sort functions
-     each sort function takes two parameters, a and b
-     you are comparing a[0] and b[0] */
-  static sort_alpha (a,b) {
-    if (a[0]===b[0]) return 0;
-    if (a[0]<b[0]) return -1;
-    return 1;
+  /**
+   * Simple alpha sort.
+   * @param {Array} a 
+   * @param {Array} b 
+   * @returns {number}
+   */
+  static sort_alpha(a, b) {
+    if (a[0] === b[0]) return 0;
+    return a[0] < b[0] ? -1 : 1;
   }
 
-  static shaker_sort (list, comp_func) {
+  /**
+   * Stable shaker sort.
+   * @param {Array} list 
+   * @param {Function} comp_func 
+   */
+  static shaker_sort(list, comp_func) {
     // A stable sort function to allow multi-level sorting of data
     // see: http://en.wikipedia.org/wiki/Cocktail_sort
-    // thanks to Joseph Nahmias
-    var b = 0;
-    var t = list.length - 1;
-    var swap = true;
+    let b = 0;
+    let t = list.length - 1;
+    let swap = true;
 
-    while(swap) {
-        swap = false;
-        for(let i = b; i < t; ++i) {
-            if ( comp_func(list[i], list[i+1]) > 0 ) {
-                const q = list[i]; list[i] = list[i+1]; list[i+1] = q;
-                swap = true;
-            }
-        } // for
-        t--;
+    while (swap) {
+      swap = false;
+      for (let i = b; i < t; ++i) {
+        if (comp_func(list[i], list[i + 1]) > 0) {
+          [list[i], list[i + 1]] = [list[i + 1], list[i]];
+          swap = true;
+        }
+      } // for
+      t--;
 
-        if (!swap) break;
+      if (!swap) break;
 
-        for(let i = t; i > b; --i) {
-            if ( comp_func(list[i], list[i-1]) < 0 ) {
-                const q = list[i]; list[i] = list[i-1]; list[i-1] = q;
-                swap = true;
-            }
-        } // for
-        b++;
-
+      for (let i = t; i > b; --i) {
+        if (comp_func(list[i], list[i - 1]) < 0) {
+          [list[i], list[i - 1]] = [list[i - 1], list[i]];
+          swap = true;
+        }
+      } // for
+      b++;
     } // while(swap)
   }
 }
