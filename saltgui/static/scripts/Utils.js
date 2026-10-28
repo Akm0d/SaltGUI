@@ -1,4 +1,4 @@
-/* global Hilitor */
+import { Hilitor } from "../hilitor/hilitor.js";
 
 import {Character} from "./Character.js";
 import {DropDownMenu} from "./DropDown.js";

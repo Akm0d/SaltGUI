@@ -1,148 +1,131 @@
-// Original JavaScript code by Chirp Internet: www.chirp.com.au
-// Please acknowledge use of this code by including this header.
+/**
+ * Hilitor - Word Highlighting Utility
+ * Refactored for SaltGUI modernization.
+ */
+export class Hilitor {
+  #targetNode;
+  #hiliteTag;
+  #skipTags;
+  #colors = ["#ff6", "#a0ffff", "#9f9", "#f99", "#f6f"];
+  #wordColor = {};
+  #colorIdx = 0;
+  #matchRegExp = "";
+  #openLeft = false;
+  #openRight = false;
+  #endRegExp = /^[\w]+|[\w]+$/g;
+  #breakRegExp = /[^\w'-]+/g;
+  #nrHilites = 0;
 
-//function Hilitor(id, tag)
-function Hilitor(start, id, tag)
-{
+  constructor(start, id, tag) {
+    this.#targetNode = start;
+    if (id) this.#targetNode = this.#targetNode.querySelector(id);
+    this.#hiliteTag = tag || "MARK";
+    this.#skipTags = new RegExp(`^(?:${this.#hiliteTag}|SCRIPT|FORM)$`);
+  }
 
-  // private variables
-  //var targetNode = document.getElementById(id) || document.body;
-  let targetNode = start;
-  if(id) targetNode = targetNode.querySelector(id);
-  var hiliteTag = tag || "MARK";
-  var skipTags = new RegExp("^(?:" + hiliteTag + "|SCRIPT|FORM)$");
-  var colors = ["#ff6", "#a0ffff", "#9f9", "#f99", "#f6f"];
-  var wordColor = [];
-  var colorIdx = 0;
-  var matchRegExp = "";
-  var openLeft = false;
-  var openRight = false;
+  setEndRegExp(regex) {
+    this.#endRegExp = regex;
+    return this.#endRegExp;
+  }
 
-  var nrHilites = 0;
+  setBreakRegExp(regex) {
+    this.#breakRegExp = regex;
+    return this.#breakRegExp;
+  }
 
-  // characters to strip from start and end of the input string
-  var endRegExp = /^[^\\w]+|[^\\w]+$/g;
-
-  // characters used to break up the input string into words
-  var breakRegExp = /[^\\w\'-]+/g;
-
-  this.setEndRegExp = function(regex) {
-    endRegExp = regex;
-    return endRegExp;
-  };
-
-  this.setBreakRegExp = function(regex) {
-    breakRegExp = regex;
-    return breakRegExp;
-  };
-
-  this.setMatchType = function(type)
-  {
-    switch(type)
-    {
+  setMatchType(type) {
+    switch (type) {
       case "left":
-        this.openLeft = false;
-        this.openRight = true;
+        this.#openLeft = false;
+        this.#openRight = true;
         break;
-
       case "right":
-        this.openLeft = true;
-        this.openRight = false;
+        this.#openLeft = true;
+        this.#openRight = false;
         break;
-
       case "open":
-        this.openLeft = this.openRight = true;
+        this.#openLeft = this.#openRight = true;
         break;
-
       default:
-        this.openLeft = this.openRight = false;
-
+        this.#openLeft = this.#openRight = false;
     }
-  };
+  }
 
-  this.setRegex = function(input, isCaseSensitive=false)
-  {
-    input = input.replace(endRegExp, "");
-    input = input.replace(breakRegExp, "|");
+  setRegex(input, isCaseSensitive = false) {
+    input = input.replace(this.#endRegExp, "");
+    input = input.replace(this.#breakRegExp, "|");
     input = input.replace(/^\||\|$/g, "");
-    if(input) {
-      var re = "(?:" + input + ")";
-      if(!this.openLeft) re = "\\b" + re;
-      if(!this.openRight) re = re + "\\b";
-      matchRegExp = new RegExp(re, isCaseSensitive ? "" : "i");
-      return matchRegExp;
+    if (input) {
+      const re = `(?:${input})`;
+      let pattern = re;
+      if (!this.#openLeft) pattern = `\\b${pattern}`;
+      if (!this.#openRight) pattern = `${pattern}\\b`;
+      this.#matchRegExp = new RegExp(pattern, isCaseSensitive ? "" : "i");
+      return this.#matchRegExp;
     }
     return false;
-  };
+  }
 
-  this.getRegex = function()
-  {
-    var retval = matchRegExp.toString();
-    retval = retval.replace(/(^\/(\\b)?|\(|\)|(\\b)?\/i$)/g, "");
+  getRegex() {
+    let retval = this.#matchRegExp.toString();
+    retval = retval.replace(/^\/\(\b\)?|\(|\)|\(\b\)?\/i$/g, "");
     retval = retval.replace(/\|/g, " ");
     return retval;
-  };
+  }
 
-  // recursively apply word highlighting
-  this.hiliteWords = function(node, isCaseSensitive=false)
-  {
-    if(node === undefined || !node) return;
-    if(!matchRegExp) return;
-    if(skipTags.test(node.nodeName)) return;
+  hiliteWords(node, isCaseSensitive = false) {
+    if (!node || !this.#matchRegExp) return;
+    if (this.#skipTags.test(node.nodeName)) return;
+    if (node.classList && node.classList.contains("no-search")) return;
 
-    // don't highlight where we don't want it
-    if(node.classList && node.classList.contains("no-search")) return;
-
-    if(node.hasChildNodes()) {
-      for(const childNode of node.childNodes)
+    if (node.hasChildNodes()) {
+      for (const childNode of node.childNodes) {
         this.hiliteWords(childNode, isCaseSensitive);
-    }
-    if(node.nodeType === 3) { // NODE_TEXT
-      // limit the number of highlighted matches to 25 otherwise the DOM grows rediculously
-      // and performance drops with it. and it is still a good first indication.
-      let nv, regs;
-      if(this.nrHilites <= 25 && (nv = node.nodeValue) && (regs = matchRegExp.exec(nv)) && regs[0].length > 0) {
-        const found = isCaseSensitive ? regs[0] : regs[0].toLowerCase();
-        if(!wordColor[found]) {
-          wordColor[found] = colors[colorIdx++ % colors.length];
-        }
-
-        var match = document.createElement(hiliteTag);
-        match.appendChild(document.createTextNode(regs[0]));
-        match.style.backgroundColor = wordColor[found];
-        match.style.color = "#000";
-
-        var after = node.splitText(regs.index);
-        after.nodeValue = after.nodeValue.substring(found.length);
-        node.parentNode.insertBefore(match, after);
-
-        this.nrHilites++;
       }
     }
-  };
 
-  // remove highlighting
-  this.remove = function()
-  {
-    var arr = targetNode.getElementsByTagName(hiliteTag);
+    if (node.nodeType === 3) { // NODE_TEXT
+      let nv, regs;
+      if (this.#nrHilites <= 25 && (nv = node.nodeValue) && (regs = this.#matchRegExp.exec(nv)) && regs[0].length > 0) {
+        const found = isCaseSensitive ? regs[0] : regs[0].toLowerCase();
+        if (!this.#wordColor[found]) {
+          this.#wordColor[found] = this.#colors[this.#colorIdx++ % this.#colors.length];
+        }
+
+        const match = document.createElement(this.#hiliteTag);
+        match.appendChild(document.createTextNode(regs[0]));
+        match.style.backgroundColor = this.#wordColor[found];
+        match.style.color = "#000";
+
+        const after = node.splitText(regs.index);
+        after.nodeValue = after.nodeValue.substring(found.length);
+        node.parentNode.insertBefore(match, after);
+        this.#nrHilites++;
+      }
+    }
+  }
+
+  remove() {
+    const arr = this.#targetNode.getElementsByTagName(this.#hiliteTag);
     let el;
-    while(arr.length && (el = arr[0])) {
-      var parent = el.parentNode;
+    while (arr.length && (el = arr[0])) {
+      const parent = el.parentNode;
       parent.replaceChild(el.firstChild, el);
       parent.normalize();
     }
-    this.nrHilites = 0;
-  };
+    this.#nrHilites = 0;
+  }
 
-  // start highlighting at target node
-  this.apply = function(input, isCaseSensitive=false)
-  {
+  apply(input, isCaseSensitive = false) {
     this.remove();
-    if(input === undefined || !input) return undefined;
-    if(this.setRegex(input, isCaseSensitive)) {
-      this.hiliteWords(targetNode, isCaseSensitive);
+    if (input === undefined || !input) return undefined;
+    if (this.setRegex(input, isCaseSensitive)) {
+      this.hiliteWords(this.#targetNode, isCaseSensitive);
     }
-    return matchRegExp;
-  };
+    return this.#matchRegExp;
+  }
+}
 
+if (typeof window !== 'undefined') {
+  window.Hilitor = Hilitor;
 }
