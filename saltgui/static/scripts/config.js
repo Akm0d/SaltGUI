@@ -8,6 +8,6 @@ const config = {
 
   // additional prefix for the navigation urls
   // with an empty string, the defaults will be used
-  "NAV_URL": ""
+  "NAV_URL": "/app"
 };
 /* eslint-enable no-unused-vars */

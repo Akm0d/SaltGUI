@@ -74,5 +74,8 @@
     "test:functional": "mocha --bail --trace-warnings --check-leaks --reporter spec tests/functional/",
     "test:coverage": "nyc mocha --require @babel/register --trace-warnings --check-leaks --reporter spec tests/unit/",
     "test:year": "grep -e `date +%y` docs/LICENSE.md"
+  },
+  "dependencies": {
+    "jsonpath-plus": "^11.2.2"
   }
 }
