@@ -1,13 +1,12 @@
 /* global */
 
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 const MAX_EVENTS_IN_VIEW = 100;
 
 export class EventsPanel extends Panel {
-
   constructor () {
     super("events");
 
@@ -17,7 +16,7 @@ export class EventsPanel extends Panel {
     this.addHelpButton([
       "The content of this page is",
       "automatically refreshed.",
-      "Display is limited to " + MAX_EVENTS_IN_VIEW + " events."
+      "Display is limited to " + MAX_EVENTS_IN_VIEW + " events.",
     ]);
     this.addTable(["Timestamp", "Tag", "Data"]);
     this.addMsg();
@@ -37,7 +36,12 @@ export class EventsPanel extends Panel {
     // when there are more than a screen-ful of events, the user
     // will not see the "press play" message. but the user already
     // knows that because that caused the events to be shown...
-    let txt = Utils.txtZeroOneMany(this.nrEvents, "No events", "{0} event", "{0} events");
+    let txt = Utils.txtZeroOneMany(
+      this.nrEvents,
+      "No events",
+      "{0} event",
+      "{0} events",
+    );
     if (this.playOrPause === "play") {
       const tbody = this.table.tBodies[0];
       txt += noprint_b;
@@ -52,7 +56,6 @@ export class EventsPanel extends Panel {
   }
 
   handleAnyEvent (pTag, pData) {
-
     if (this.playOrPause !== "play") {
       return;
     }

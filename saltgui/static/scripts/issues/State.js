@@ -1,8 +1,8 @@
 /* global */
 
-import {Issues} from "./Issues.js";
-import {JobsPanel} from "../panels/Jobs.js";
-import {Utils} from "../Utils.js";
+import { Issues } from "./Issues.js";
+import { JobsPanel } from "../panels/Jobs.js";
+import { Utils } from "../Utils.js";
 
 // only consider this number of latest highstate jobs
 const MAX_HIGHSTATE_JOBS = 10;
@@ -14,38 +14,51 @@ const MAX_HIGHSTATE_JOBS = 10;
 // therefore both are ignored
 
 export class StateIssues extends Issues {
-
   onGetIssues (pPanel) {
-
     const msg = super.onGetIssues(pPanel, "STATE");
 
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
 
-    const runnerJobsListJobsPromise = this.api.getRunnerJobsListJobs(["state.apply", "state.highstate", "state.sls_id"]);
+    const runnerJobsListJobsPromise = this.api.getRunnerJobsListJobs([
+      "state.apply",
+      "state.highstate",
+      "state.sls_id",
+    ]);
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      runnerJobsListJobsPromise.then((pRunnerJobsListJobsData) => {
-        Issues.removeCategory(pPanel, "state");
-        this._handleLowstateRunnerJobsListJobs(pPanel, pRunnerJobsListJobsData, pWheelKeyListAllData, msg);
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        runnerJobsListJobsPromise.then(
+          (pRunnerJobsListJobsData) => {
+            Issues.removeCategory(pPanel, "state");
+            this._handleLowstateRunnerJobsListJobs(
+              pPanel,
+              pRunnerJobsListJobsData,
+              pWheelKeyListAllData,
+              msg,
+            );
+            return true;
+          },
+          (pRunnerJobsListJobsMsg) => {
+            Issues.removeCategory(pPanel, "state");
+            const tr = Issues.addIssue(pPanel, "state", "retrieving");
+            Issues.addIssueMsg(tr, "Could not retrieve list of jobs");
+            Issues.addIssueErr(tr, pRunnerJobsListJobsMsg);
+            Issues.readyCategory(pPanel, msg);
+            return false;
+          },
+        );
         return true;
-      }, (pRunnerJobsListJobsMsg) => {
+      },
+      (pWheelKeyListAllMsg) => {
+        Utils.ignorePromise(runnerJobsListJobsPromise);
         Issues.removeCategory(pPanel, "state");
         const tr = Issues.addIssue(pPanel, "state", "retrieving");
-        Issues.addIssueMsg(tr, "Could not retrieve list of jobs");
-        Issues.addIssueErr(tr, pRunnerJobsListJobsMsg);
+        Issues.addIssueMsg(tr, "Could not retrieve list of keys");
+        Issues.addIssueErr(tr, pWheelKeyListAllMsg);
         Issues.readyCategory(pPanel, msg);
         return false;
-      });
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      Utils.ignorePromise(runnerJobsListJobsPromise);
-      Issues.removeCategory(pPanel, "state");
-      const tr = Issues.addIssue(pPanel, "state", "retrieving");
-      Issues.addIssueMsg(tr, "Could not retrieve list of keys");
-      Issues.addIssueErr(tr, pWheelKeyListAllMsg);
-      Issues.readyCategory(pPanel, msg);
-      return false;
-    });
+      },
+    );
 
     /* eslint-disable compat/compat */
     /* Promise.all is not supported in op_mini all, IE 11 */
@@ -96,26 +109,32 @@ export class StateIssues extends Issues {
 
     const runnerJobsListJobPromise = this.api.getRunnerJobsListJob(job.id);
 
-    runnerJobsListJobPromise.then((pRunnerJobsListJobData) => {
-      StateIssues._handleJobRunnerJobsListJob(pPanel, pRunnerJobsListJobData, pKeys);
-      pPanel.issuesStateTimeout = window.setTimeout(() => {
-        pPanel.issuesStateTimeout = null;
-        this._updateNextJob(pPanel, pMsg, pKeys);
-      }, 100);
-      return true;
-    }, (pRunnerJobsListJobsMsg) => {
-      const tr = Issues.addIssue(pPanel, "state", "retrieving");
-      Issues.addIssueMsg(tr, "Could not retrieve details of job " + job.id);
-      Issues.addIssueErr(tr, pRunnerJobsListJobsMsg);
-      return false;
-    });
+    runnerJobsListJobPromise.then(
+      (pRunnerJobsListJobData) => {
+        StateIssues._handleJobRunnerJobsListJob(
+          pPanel,
+          pRunnerJobsListJobData,
+          pKeys,
+        );
+        pPanel.issuesStateTimeout = window.setTimeout(() => {
+          pPanel.issuesStateTimeout = null;
+          this._updateNextJob(pPanel, pMsg, pKeys);
+        }, 100);
+        return true;
+      },
+      (pRunnerJobsListJobsMsg) => {
+        const tr = Issues.addIssue(pPanel, "state", "retrieving");
+        Issues.addIssueMsg(tr, "Could not retrieve details of job " + job.id);
+        Issues.addIssueErr(tr, pRunnerJobsListJobsMsg);
+        return false;
+      },
+    );
   }
 
   static _handleJobRunnerJobsListJob (pPanel, pJobData, pKeys) {
     const jobData = pJobData.return[0];
 
     for (const minionId in jobData.Result) {
-
       if (pKeys.indexOf(minionId) < 0) {
         // this is no longer a valid minion
         continue;
@@ -134,23 +153,59 @@ export class StateIssues extends Issues {
           // e.g. an error string
           continue;
         }
-        const key = minionId + "-" + stateData.__sls__ + "-" + stateData.__id__ + "-" + stateData.__run_num__;
+        const key =
+          minionId +
+          "-" +
+          stateData.__sls__ +
+          "-" +
+          stateData.__id__ +
+          "-" +
+          stateData.__run_num__;
         if (stateData.result === true) {
           // problem solved in a later execution
           Issues.removeIssue(pPanel, "state", key);
           continue;
         }
-        if (stateData.__sls__ && stateData.__id__ && stateData.__run_num__ !== undefined) {
+        if (
+          stateData.__sls__ &&
+          stateData.__id__ &&
+          stateData.__run_num__ !== undefined
+        ) {
           const tr = Issues.addIssue(pPanel, "state", key);
-          Issues.addIssueMsg(tr, "State '" + stateData.__sls__ + "/" + stateData.__id__ + "/" + stateData.__run_num__ + "' on '" + minionId + "' failed");
+          Issues.addIssueMsg(
+            tr,
+            "State '" +
+              stateData.__sls__ +
+              "/" +
+              stateData.__id__ +
+              "/" +
+              stateData.__run_num__ +
+              "' on '" +
+              minionId +
+              "' failed",
+          );
           // note that all tasks from the state are applied again, not only the failed ones
-          Issues.addIssueCmd(tr, "Apply state", minionId, ["state.sls_id", stateData.__id__, "mods=", stateData.__sls__]);
-          Issues.addIssueNav(tr, "job", {"id": jobData.jid, "minionid": minionId});
+          Issues.addIssueCmd(tr, "Apply state", minionId, [
+            "state.sls_id",
+            stateData.__id__,
+            "mods=",
+            stateData.__sls__,
+          ]);
+          Issues.addIssueNav(tr, "job", {
+            id: jobData.jid,
+            minionid: minionId,
+          });
         } else if (stateData.__id__) {
           // really old minions do not fill __sls__
           const tr = Issues.addIssue(pPanel, "state", key);
-          Issues.addIssueMsg(tr, "State '" + stateData.__id__ + "' on '" + minionId + "' failed");
-          Issues.addIssueNav(tr, "job", {"id": jobData.jid, "minionid": minionId});
+          Issues.addIssueMsg(
+            tr,
+            "State '" + stateData.__id__ + "' on '" + minionId + "' failed",
+          );
+          Issues.addIssueNav(tr, "job", {
+            id: jobData.jid,
+            minionid: minionId,
+          });
         }
       }
     }

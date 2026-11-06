@@ -1,18 +1,20 @@
 /* global */
 
-import {DropDownMenu} from "../DropDown.js";
-import {Panel} from "./Panel.js";
-import {Router} from "../Router.js";
-import {Utils} from "../Utils.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Panel } from "./Panel.js";
+import { Router } from "../Router.js";
+import { Utils } from "../Utils.js";
 
 export class TemplatesPanel extends Panel {
-
   constructor () {
     super("templates");
 
     this.addTitle("Templates");
     this.addSearchButton();
-    this.addTable(["-menu-", "Name", "Category", "Key", "Description", "Target", "Command"], "data-list-templates");
+    this.addTable(
+      ["-menu-", "Name", "Category", "Key", "Description", "Target", "Command"],
+      "data-list-templates",
+    );
     this.setTableSortable("Name", "asc");
     this.setTableClickable("cmd");
     this.addMsg();
@@ -23,15 +25,20 @@ export class TemplatesPanel extends Panel {
 
     this.nrTemplates = 0;
 
-    wheelConfigValuesPromise.then((pWheelConfigValuesData) => {
-      this._handleTemplatesWheelConfigValues(pWheelConfigValuesData);
-      this.hideColumnWhenNone("Category");
-      this.hideColumnWhenNone("Key");
-      return true;
-    }, (pWheelConfigValuesMsg) => {
-      this._handleTemplatesWheelConfigValues(JSON.stringify(pWheelConfigValuesMsg));
-      return false;
-    });
+    wheelConfigValuesPromise.then(
+      (pWheelConfigValuesData) => {
+        this._handleTemplatesWheelConfigValues(pWheelConfigValuesData);
+        this.hideColumnWhenNone("Category");
+        this.hideColumnWhenNone("Key");
+        return true;
+      },
+      (pWheelConfigValuesMsg) => {
+        this._handleTemplatesWheelConfigValues(
+          JSON.stringify(pWheelConfigValuesMsg),
+        );
+        return false;
+      },
+    );
   }
 
   _handleTemplatesWheelConfigValues (pWheelConfigValuesData) {
@@ -40,7 +47,8 @@ export class TemplatesPanel extends Panel {
     }
 
     // should we update it or just use from cache (see commandbox) ?
-    let templates = pWheelConfigValuesData.return[0].data.return.saltgui_templates;
+    let templates =
+      pWheelConfigValuesData.return[0].data.return.saltgui_templates;
     this.nrTemplates = Object.keys(templates).length;
 
     if (templates) {
@@ -60,8 +68,12 @@ export class TemplatesPanel extends Panel {
   }
 
   updateFooter () {
-    const txt = Utils.txtZeroOneMany(this.nrTemplates,
-      "No templates", "{0} template", "{0} templates");
+    const txt = Utils.txtZeroOneMany(
+      this.nrTemplates,
+      "No templates",
+      "{0} template",
+      "{0} templates",
+    );
     this.setMsg(txt);
   }
 
@@ -69,7 +81,10 @@ export class TemplatesPanel extends Panel {
     const categories = [];
     if (template.category && typeof template.category === "string") {
       categories.push(template.category);
-    } else if (typeof template.categories === "object" && Array.isArray(template.categories)) {
+    } else if (
+      typeof template.categories === "object" &&
+      Array.isArray(template.categories)
+    ) {
       for (const category of template.categories) {
         if (typeof category === "string") {
           categories.push(category);
@@ -85,14 +100,21 @@ export class TemplatesPanel extends Panel {
     let categories = [];
     const keys = Object.keys(templates);
     for (const key of keys) {
-    // make unique
+      // make unique
       const template = templates[key];
-      categories = categories.concat(TemplatesPanel.getTemplateCategories(template));
+      categories = categories.concat(
+        TemplatesPanel.getTemplateCategories(template),
+      );
     }
     // make unique
-    categories = categories.filter((element, index, array) => array.indexOf(element) === index);
+    categories = categories.filter(
+      (element, index, array) => array.indexOf(element) === index,
+    );
     // make sorted, thx https://stackoverflow.com/questions/29829205/sort-an-array-so-that-null-values-always-come-last
-    categories.sort((aa, bb) => (bb === null) - (aa === null) || +Number(aa > bb) || -Number(aa < bb));
+    categories.sort(
+      (aa, bb) =>
+        (bb === null) - (aa === null) || +Number(aa > bb) || -Number(aa < bb),
+    );
 
     const lov = document.getElementById("data-list-templates");
     // remove any previous lov-entries

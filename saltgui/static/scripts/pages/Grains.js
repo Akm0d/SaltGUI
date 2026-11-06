@@ -1,12 +1,11 @@
 /* global */
 
-import {GrainsPanel} from "../panels/Grains.js";
-import {JobsSummaryPanel} from "../panels/JobsSummary.js";
-import {Page} from "./Page.js";
-import {Utils} from "../Utils.js";
+import { GrainsPanel } from "../panels/Grains.js";
+import { JobsSummaryPanel } from "../panels/JobsSummary.js";
+import { Page } from "./Page.js";
+import { Utils } from "../Utils.js";
 
 export class GrainsPage extends Page {
-
   constructor (pRouter) {
     super("grains", "Grains", "page-grains", "button-grains", pRouter);
 

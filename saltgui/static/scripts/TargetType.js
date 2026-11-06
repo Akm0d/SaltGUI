@@ -1,19 +1,34 @@
 /* global */
 
-import {Character} from "./Character.js";
-import {DropDownMenu} from "./DropDown.js";
-import {Utils} from "./Utils.js";
+import { Character } from "./Character.js";
+import { DropDownMenu } from "./DropDown.js";
+import { Utils } from "./Utils.js";
 
 export class TargetType {
-
   static createMenu () {
     const targetbox = document.getElementById("target-box");
     TargetType.menuTargetType = new DropDownMenu(targetbox);
     // do not show the menu title at first
-    TargetType.menuTargetType.addMenuItem("Normal", TargetType._manualUpdateTargetTypeText, "glob");
-    TargetType.menuTargetType.addMenuItem("List", TargetType._manualUpdateTargetTypeText, "list");
-    TargetType.menuTargetType.addMenuItem(TargetType._targetTypeNodeGroupPrepare, TargetType._manualUpdateTargetTypeText, "nodegroup");
-    TargetType.menuTargetType.addMenuItem("Compound", TargetType._manualUpdateTargetTypeText, "compound");
+    TargetType.menuTargetType.addMenuItem(
+      "Normal",
+      TargetType._manualUpdateTargetTypeText,
+      "glob",
+    );
+    TargetType.menuTargetType.addMenuItem(
+      "List",
+      TargetType._manualUpdateTargetTypeText,
+      "list",
+    );
+    TargetType.menuTargetType.addMenuItem(
+      TargetType._targetTypeNodeGroupPrepare,
+      TargetType._manualUpdateTargetTypeText,
+      "nodegroup",
+    );
+    TargetType.menuTargetType.addMenuItem(
+      "Compound",
+      TargetType._manualUpdateTargetTypeText,
+      "compound",
+    );
     TargetType.setTargetTypeDefault();
   }
 
@@ -91,8 +106,12 @@ export class TargetType {
     if (Array.isArray(pTarget)) {
       return "list";
     }
-    if (pTarget.includes("@") || pTarget.includes(" ") ||
-      pTarget.includes("(") || pTarget.includes(")")) {
+    if (
+      pTarget.includes("@") ||
+      pTarget.includes(" ") ||
+      pTarget.includes("(") ||
+      pTarget.includes(")")
+    ) {
       // "@" is a strong indicator for compound target
       // but "space", "(" and ")" are also typical for compound target
       return "compound";
@@ -110,13 +129,12 @@ export class TargetType {
   }
 
   static autoSelectTargetType (pTarget) {
-
     if (!TargetType.menuTargetType._system) {
       // user has selected the value, do not touch it
       return;
     }
 
-    const targetType = TargetType.getTargetTypeFromTarget (pTarget);
+    const targetType = TargetType.getTargetTypeFromTarget(pTarget);
     TargetType.menuTargetType._value = targetType;
 
     // show the new title

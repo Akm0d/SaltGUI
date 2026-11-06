@@ -1,11 +1,10 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class JobsPanel extends Panel {
-
   onShow (cnt) {
     // collect the list of hidden/shown functions
     this._showJobs = Utils.getStorageItemList("session", "show_jobs");
@@ -14,33 +13,42 @@ export class JobsPanel extends Panel {
     const runnerJobsListJobsPromise = this.api.getRunnerJobsListJobs();
     const runnerJobsActivePromise = this.api.getRunnerJobsActive();
 
-    runnerJobsListJobsPromise.then((pRunnerJobsListJobsData) => {
-      this._handleRunnerJobsListJobs(pRunnerJobsListJobsData, cnt);
-      runnerJobsActivePromise.then((pRunnerJobsActiveData) => {
-        this._handleRunnerJobsActive(pRunnerJobsActiveData);
+    runnerJobsListJobsPromise.then(
+      (pRunnerJobsListJobsData) => {
+        this._handleRunnerJobsListJobs(pRunnerJobsListJobsData, cnt);
+        runnerJobsActivePromise.then(
+          (pRunnerJobsActiveData) => {
+            this._handleRunnerJobsActive(pRunnerJobsActiveData);
+            return true;
+          },
+          (pRunnerJobsActiveMsg) => {
+            this._handleRunnerJobsActive(JSON.stringify(pRunnerJobsActiveMsg));
+            return false;
+          },
+        );
         return true;
-      }, (pRunnerJobsActiveMsg) => {
-        this._handleRunnerJobsActive(JSON.stringify(pRunnerJobsActiveMsg));
+      },
+      (pRunnerJobsListJobsMsg) => {
+        this._handleRunnerJobsListJobs(JSON.stringify(pRunnerJobsListJobsMsg));
+        Utils.ignorePromise(runnerJobsActivePromise);
         return false;
-      });
-      return true;
-    }, (pRunnerJobsListJobsMsg) => {
-      this._handleRunnerJobsListJobs(JSON.stringify(pRunnerJobsListJobsMsg));
-      Utils.ignorePromise(runnerJobsActivePromise);
-      return false;
-    });
+      },
+    );
   }
 
   startRunningJobs () {
     const runnerJobsActivePromise = this.api.getRunnerJobsActive();
 
-    runnerJobsActivePromise.then((pRunnerJobsActiveData) => {
-      this._handleRunnerJobsActive(pRunnerJobsActiveData);
-      return true;
-    }, (pRunnerJobsActiveMsg) => {
-      this._handleRunnerJobsActive(JSON.stringify(pRunnerJobsActiveMsg));
-      return false;
-    });
+    runnerJobsActivePromise.then(
+      (pRunnerJobsActiveData) => {
+        this._handleRunnerJobsActive(pRunnerJobsActiveData);
+        return true;
+      },
+      (pRunnerJobsActiveMsg) => {
+        this._handleRunnerJobsActive(JSON.stringify(pRunnerJobsActiveMsg));
+        return false;
+      },
+    );
   }
 
   _handleRunnerJobsActive (pData) {
@@ -69,13 +77,17 @@ export class JobsPanel extends Panel {
       const job = jobs[jobId];
 
       let targetText = "";
-      const targetField = this.table.querySelector("tr#" + Utils.getIdFromJobId(jobId) + " span.job-status");
+      const targetField = this.table.querySelector(
+        "tr#" + Utils.getIdFromJobId(jobId) + " span.job-status",
+      );
       const maxTextLength = 50;
       if (targetText.length > maxTextLength) {
         // prevent column becoming too wide
         // yes, the addition of running/returned may again make
         // the string longer than 50 characters, we accept that
-        targetText = targetText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
+        targetText =
+          targetText.substring(0, maxTextLength) +
+          Character.HORIZONTAL_ELLIPSIS;
       }
       // then add the operational statistics
       if (job.Running && job.Running.length > 0) {
@@ -91,7 +103,10 @@ export class JobsPanel extends Panel {
       }
       targetField.classList.remove("no-job-status");
       targetField.innerText = targetText;
-      targetField.insertBefore(Utils.createJobStatusSpan(jobId, true), targetField.firstChild);
+      targetField.insertBefore(
+        Utils.createJobStatusSpan(jobId, true),
+        targetField.firstChild,
+      );
       Utils.addToolTip(targetField, "Click to refresh column");
     }
 
@@ -193,7 +208,6 @@ export class JobsPanel extends Panel {
     let numberOfJobsEligible = 0;
     const numberOfJobsPresent = jobs.length;
     for (const job of jobs) {
-
       if (Utils.isIncluded(job.Function, this._showJobs, this._hideJobs)) {
         numberOfJobsEligible += 1;
       } else if (pMaxNumberOfJobs !== 99999) {
@@ -224,14 +238,29 @@ export class JobsPanel extends Panel {
   }
 
   updateFooter () {
-    let txt = Utils.txtZeroOneMany(this.numberOfJobsShown,
-      "No jobs shown", "{0} job shown", "{0} jobs shown");
-    if (this.numberOfJobsEligible > 0 && this.numberOfJobsEligible > this.numberOfJobsShown) {
-      txt += Utils.txtZeroOneMany(this.numberOfJobsEligible,
-        "", ", {0} job eligible", ", {0} jobs eligible");
+    let txt = Utils.txtZeroOneMany(
+      this.numberOfJobsShown,
+      "No jobs shown",
+      "{0} job shown",
+      "{0} jobs shown",
+    );
+    if (
+      this.numberOfJobsEligible > 0 &&
+      this.numberOfJobsEligible > this.numberOfJobsShown
+    ) {
+      txt += Utils.txtZeroOneMany(
+        this.numberOfJobsEligible,
+        "",
+        ", {0} job eligible",
+        ", {0} jobs eligible",
+      );
     }
-    txt += Utils.txtZeroOneMany(this.numberOfJobsPresent,
-      "", ", {0} job present", ", {0} jobs present");
+    txt += Utils.txtZeroOneMany(
+      this.numberOfJobsPresent,
+      "",
+      ", {0} job present",
+      ", {0} jobs present",
+    );
     this.setMsg(txt);
   }
 
@@ -269,7 +298,6 @@ export class JobsPanel extends Panel {
   }
 
   handleSaltJobRetEvent (pData) {
-
     // ignore the most common events until someone complains
     if (pData.fun === "saltutil.find_job") {
       return;

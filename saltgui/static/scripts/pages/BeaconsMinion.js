@@ -1,14 +1,19 @@
 /* global */
 
-import {BeaconsMinionPanel} from "../panels/BeaconsMinion.js";
-import {JobsSummaryPanel} from "../panels/JobsSummary.js";
-import {Page} from "./Page.js";
-import {Utils} from "../Utils.js";
+import { BeaconsMinionPanel } from "../panels/BeaconsMinion.js";
+import { JobsSummaryPanel } from "../panels/JobsSummary.js";
+import { Page } from "./Page.js";
+import { Utils } from "../Utils.js";
 
 export class BeaconsMinionPage extends Page {
-
   constructor (pRouter) {
-    super("beacons-minion", "Beacons", "page-beacons-minion", "button-beacons", pRouter);
+    super(
+      "beacons-minion",
+      "Beacons",
+      "page-beacons-minion",
+      "button-beacons",
+      pRouter,
+    );
 
     this.beaconsminion = new BeaconsMinionPanel();
     super.addPanel(this.beaconsminion);

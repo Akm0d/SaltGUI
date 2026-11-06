@@ -1,11 +1,9 @@
-import {Output} from "./Output.js";
-import {OutputNested} from "./OutputNested.js";
-import {Utils} from "../Utils.js";
+import { Output } from "./Output.js";
+import { OutputNested } from "./OutputNested.js";
+import { Utils } from "../Utils.js";
 
 export class OutputHighstateTaskFull {
-
   static getStateOutput (pTask, pTaskId, pTaskName, pFunctionName) {
-
     let txt = "----------";
 
     txt += "\n          ID: " + pTaskId;
@@ -25,7 +23,12 @@ export class OutputHighstateTaskFull {
     if (pTask.start_time) {
       // start_time is set by the original minion in its own timezone
       // we have no knowledge of that timezone, so no enhanced presentation here
-      const startTime = Output.dateTimeStr("1999, Sep 9 " + pTask.start_time, null, null, true);
+      const startTime = Output.dateTimeStr(
+        "1999, Sep 9 " + pTask.start_time,
+        null,
+        null,
+        true,
+      );
       txt += "\n     Started: " + startTime;
     }
 

@@ -1,11 +1,10 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class KeysPanel extends Panel {
-
   constructor () {
     super("keys");
 
@@ -24,10 +23,13 @@ export class KeysPanel extends Panel {
     this.addPlayPauseButton();
     this.addHelpButton([
       "The content of this page is",
-      "automatically refreshed."
+      "automatically refreshed.",
     ]);
     this.addWarningField();
-    this.addTable(["-menu-", "Minion", "Status", "Fingerprint"], "data-list-keys");
+    this.addTable(
+      ["-menu-", "Minion", "Status", "Fingerprint"],
+      "data-list-keys",
+    );
     this.setTableSortable("Status", "asc");
     this.addMsg();
 
@@ -50,55 +52,90 @@ export class KeysPanel extends Panel {
 
     this.loadMinionsTxt();
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      this._handleKeysWheelKeyListAll(pWheelKeyListAllData);
-      wheelKeyFingerPromise.then((pWheelKeyFingerData) => {
-        this._handleWheelKeyFinger(pWheelKeyFingerData);
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        this._handleKeysWheelKeyListAll(pWheelKeyListAllData);
+        wheelKeyFingerPromise.then(
+          (pWheelKeyFingerData) => {
+            this._handleWheelKeyFinger(pWheelKeyFingerData);
+            return true;
+          },
+          (pWheelKeyFingerMsg) => {
+            const msg = JSON.stringify(pWheelKeyFingerMsg);
+            const allMinionsErr1 = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions,
+              msg,
+            );
+            const allMinionsErr2 = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions_pre,
+              msg,
+            );
+            const allMinionsErr3 = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions_rejected,
+              msg,
+            );
+            const allMinionsErr4 = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions_denied,
+              msg,
+            );
+            /* eslint-disable prefer-object-spread */
+            const allMinionsErr = Object.assign(
+              {},
+              allMinionsErr1,
+              allMinionsErr2,
+              allMinionsErr3,
+              allMinionsErr4,
+            );
+            /* eslint-enable prefer-object-spread */
+            this._handleWheelKeyFinger({
+              return: [{ data: { return: { minions: allMinionsErr } } }],
+            });
+            return false;
+          },
+        );
         return true;
-      }, (pWheelKeyFingerMsg) => {
-        const msg = JSON.stringify(pWheelKeyFingerMsg);
-        const allMinionsErr1 = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions, msg);
-        const allMinionsErr2 = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions_pre, msg);
-        const allMinionsErr3 = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions_rejected, msg);
-        const allMinionsErr4 = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions_denied, msg);
-        /* eslint-disable prefer-object-spread */
-        const allMinionsErr = Object.assign({}, allMinionsErr1, allMinionsErr2, allMinionsErr3, allMinionsErr4);
-        /* eslint-enable prefer-object-spread */
-        this._handleWheelKeyFinger({"return": [{"data": {"return": {"minions": allMinionsErr}}}]});
+      },
+      (pWheelKeyListAllMsg) => {
+        this._handleKeysWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
+        Utils.ignorePromise(wheelKeyFingerPromise);
         return false;
-      });
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      this._handleKeysWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
-      Utils.ignorePromise(wheelKeyFingerPromise);
-      return false;
-    });
+      },
+    );
   }
 
   showSyndicInfo (pSyndicEventFound) {
     const syndicMaster = Utils.getStorageItem("session", "syndic_master", "");
-    const orderMasters = Utils.getStorageItemBoolean("session", "order_masters");
+    const orderMasters = Utils.getStorageItemBoolean(
+      "session",
+      "order_masters",
+    );
 
     let warningText = "";
 
     if (syndicMaster !== "" && syndicMaster !== "masterofmasters") {
-      warningText += " The syndic-master of this salt-master is '" + syndicMaster + "'.";
+      warningText +=
+        " The syndic-master of this salt-master is '" + syndicMaster + "'.";
     }
 
     if (orderMasters) {
-      warningText += " This salt-master is ready to work with salt-syndic nodes.";
+      warningText +=
+        " This salt-master is ready to work with salt-syndic nodes.";
     }
 
     if (pSyndicEventFound) {
-      warningText += " Events related to salt-syndic are seen in the salt-event-bus.";
+      warningText +=
+        " Events related to salt-syndic are seen in the salt-event-bus.";
     }
 
     if (warningText === "") {
       this.setWarningText();
     } else {
-      warningText += " This overview contains only the keys of minions that are connected to this salt-master.";
-      warningText += " Keys for minions that are connected to other salt-masters are not always shown in this SaltGUI.";
-      warningText += " Commands issued from this salt-master may involve minions that are not listed in SaltGUI.";
+      warningText +=
+        " This overview contains only the keys of minions that are connected to this salt-master.";
+      warningText +=
+        " Keys for minions that are connected to other salt-masters are not always shown in this SaltGUI.";
+      warningText +=
+        " Commands issued from this salt-master may involve minions that are not listed in SaltGUI.";
       this.setWarningText("info", warningText.trim());
     }
   }
@@ -123,7 +160,9 @@ export class KeysPanel extends Panel {
       }
       const hosts = allKeys[property];
       for (const minionId of Object.keys(hosts)) {
-        const item = this.table.querySelector("#" + Utils.getIdFromMinionId(minionId) + " .os");
+        const item = this.table.querySelector(
+          "#" + Utils.getIdFromMinionId(minionId) + " .os",
+        );
         if (item) {
           // remove td.os for known minions and add td.fingerprint
           item.classList.remove("os");
@@ -131,7 +170,9 @@ export class KeysPanel extends Panel {
         }
 
         // update td.fingerprint with fingerprint value
-        const fingerprintTr = this.table.querySelector("#" + Utils.getIdFromMinionId(minionId));
+        const fingerprintTr = this.table.querySelector(
+          "#" + Utils.getIdFromMinionId(minionId),
+        );
         if (!fingerprintTr) {
           continue;
         }
@@ -211,10 +252,14 @@ export class KeysPanel extends Panel {
       }
 
       for (const key of Object.keys(cnt).sort()) {
-        txt += ", " + Utils.txtZeroOneMany(cnt[key],
-          "no " + key + " keys",
-          "{0} " + key + " key",
-          "{0} " + key + " keys");
+        txt +=
+          ", " +
+          Utils.txtZeroOneMany(
+            cnt[key],
+            "no " + key + " keys",
+            "{0} " + key + " key",
+            "{0} " + key + " keys",
+          );
       }
     }
 
@@ -235,15 +280,23 @@ export class KeysPanel extends Panel {
     super.updateFooter(txt, false);
   }
 
-  static _flagMinion (pMinionId, pStatusField, pMinionTr, pMinionsDict, pIsMissing = false) {
+  static _flagMinion (
+    pMinionId,
+    pStatusField,
+    pMinionTr,
+    pMinionsDict,
+    pIsMissing = false,
+  ) {
     let txt = "";
 
     if (!Object.keys(pMinionsDict).length) {
       // list of well-known minion is empty
       // assume we actually don't known
-
       // Arrays.includes() is only available from ES7/2016
-    } else if (!pIsMissing && Object.keys(pMinionsDict).indexOf(pMinionId) >= 0) {
+    } else if (
+      !pIsMissing &&
+      Object.keys(pMinionsDict).indexOf(pMinionId) >= 0
+    ) {
       // this is a known minion
     } else {
       // this is an unknown minion
@@ -259,10 +312,12 @@ export class KeysPanel extends Panel {
         txt = "Unexpected entry\nBut it is already denied";
         break;
       case "unaccepted":
-        txt = "Unexpected entry\nDo not accept this entry without proper verification!";
+        txt =
+            "Unexpected entry\nDo not accept this entry without proper verification!";
         break;
       case "missing":
-        txt = "Entry is missing\nIs the host running and is the salt-minion installed and started?";
+        txt =
+            "Entry is missing\nIs the host running and is the salt-minion installed and started?";
         break;
       default:
         txt = "Unknown status '" + status + "'";
@@ -279,7 +334,8 @@ export class KeysPanel extends Panel {
       Utils.addToolTip(
         minionIdSpan,
         txt + "\nUpdate file 'minions.txt' when needed",
-        "bottom-left");
+        "bottom-left",
+      );
     } else {
       // this also removes any tooltip
       minionIdSpan.innerText = pMinionId;
@@ -305,7 +361,9 @@ export class KeysPanel extends Panel {
 
     // force same columns on all rows
     // do not use class "fingerprint" yet
-    minionTr.appendChild(Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS));
+    minionTr.appendChild(
+      Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS),
+    );
   }
 
   _addRejectedMinion (pMinionId, pMinionsDict) {
@@ -327,7 +385,9 @@ export class KeysPanel extends Panel {
 
     // force same columns on all rows
     // do not use class "fingerprint" yet
-    minionTr.appendChild(Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS));
+    minionTr.appendChild(
+      Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS),
+    );
 
     const tbody = this.table.tBodies[0];
     tbody.appendChild(minionTr);
@@ -352,7 +412,9 @@ export class KeysPanel extends Panel {
 
     // force same columns on all rows
     // do not use class "fingerprint" yet
-    minionTr.appendChild(Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS));
+    minionTr.appendChild(
+      Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS),
+    );
 
     const tbody = this.table.tBodies[0];
     tbody.appendChild(minionTr);
@@ -379,7 +441,9 @@ export class KeysPanel extends Panel {
 
     // force same columns on all rows
     // do not use class "fingerprint" yet
-    minionTr.appendChild(Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS));
+    minionTr.appendChild(
+      Utils.createTd("os", "loading" + Character.HORIZONTAL_ELLIPSIS),
+    );
 
     const tbody = this.table.tBodies[0];
     if (pInsertAtTop) {
@@ -413,215 +477,297 @@ export class KeysPanel extends Panel {
 
   _addDropDownMenu (pMinionTr, pMinionId, pStatusField) {
     // final dropdownmenu
-    this._addMenuItemWheelKeyAccept1(pMinionTr.dropdownmenu, pMinionId, pStatusField);
-    this._addMenuItemWheelKeyReject(pMinionTr.dropdownmenu, pMinionId, pStatusField);
-    this._addMenuItemWheelKeyDelete(pMinionTr.dropdownmenu, pMinionId, pStatusField);
-    this._addMenuItemWheelKeyAccept2(pMinionTr.dropdownmenu, pMinionId, pStatusField);
+    this._addMenuItemWheelKeyAccept1(
+      pMinionTr.dropdownmenu,
+      pMinionId,
+      pStatusField,
+    );
+    this._addMenuItemWheelKeyReject(
+      pMinionTr.dropdownmenu,
+      pMinionId,
+      pStatusField,
+    );
+    this._addMenuItemWheelKeyDelete(
+      pMinionTr.dropdownmenu,
+      pMinionId,
+      pStatusField,
+    );
+    this._addMenuItemWheelKeyAccept2(
+      pMinionTr.dropdownmenu,
+      pMinionId,
+      pStatusField,
+    );
   }
 
   _addMenuItemWheelKeyAccept1 (pMenu, pMinionId, pStatusField) {
-    pMenu.addMenuItem(() => {
-      const status = pStatusField.innerText;
-      if (status === "denied" || status === "unaccepted") {
-        return "Accept key...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.accept"];
-      const status = pStatusField.innerText;
-      if (status === "denied") {
-        cmdArr.push("include_denied=", true);
-      } else if (status === "rejected") {
-        cmdArr.push("include_rejected=", true);
-      }
-      this.runCommand("", pMinionId, cmdArr);
-    });
+    pMenu.addMenuItem(
+      () => {
+        const status = pStatusField.innerText;
+        if (status === "denied" || status === "unaccepted") {
+          return "Accept key...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.accept"];
+        const status = pStatusField.innerText;
+        if (status === "denied") {
+          cmdArr.push("include_denied=", true);
+        } else if (status === "rejected") {
+          cmdArr.push("include_rejected=", true);
+        }
+        this.runCommand("", pMinionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyAcceptAllUnaccepted () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.nrUnaccepted > 0) {
-        return "Accept all unaccepted keys...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.accept"];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.nrUnaccepted > 0) {
+          return "Accept all unaccepted keys...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.accept"];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyAcceptAllUnacceptedRejected () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.nrRejected) {
-        return null;
-      }
-      if (this.nrUnaccepted > 0) {
-        return "Accept all unaccepted+rejected keys...";
-      }
-      return "Accept all rejected keys...";
-    }, () => {
-      const cmdArr = ["wheel.key.accept", "include_rejected=", true];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.nrRejected) {
+          return null;
+        }
+        if (this.nrUnaccepted > 0) {
+          return "Accept all unaccepted+rejected keys...";
+        }
+        return "Accept all rejected keys...";
+      },
+      () => {
+        const cmdArr = ["wheel.key.accept", "include_rejected=", true];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyAcceptAllUnacceptedDenied () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.nrDenied) {
-        return null;
-      }
-      if (this.nrUnaccepted > 0) {
-        return "Accept all unaccepted+denied keys...";
-      }
-      return "Accept all denied keys...";
-    }, () => {
-      const cmdArr = ["wheel.key.accept", "include_denied=", true];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.nrDenied) {
+          return null;
+        }
+        if (this.nrUnaccepted > 0) {
+          return "Accept all unaccepted+denied keys...";
+        }
+        return "Accept all denied keys...";
+      },
+      () => {
+        const cmdArr = ["wheel.key.accept", "include_denied=", true];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyAcceptAllUnacceptedRejectedDenied () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.nrRejected || !this.nrDenied) {
-        return null;
-      }
-      if (this.nrUnaccepted > 0) {
-        return "Accept all unaccepted+denied+rejected keys...";
-      }
-      return "Accept all denied+rejected keys...";
-    }, () => {
-      const cmdArr = ["wheel.key.accept", "include_denied=", true, "include_rejected=", true];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.nrRejected || !this.nrDenied) {
+          return null;
+        }
+        if (this.nrUnaccepted > 0) {
+          return "Accept all unaccepted+denied+rejected keys...";
+        }
+        return "Accept all denied+rejected keys...";
+      },
+      () => {
+        const cmdArr = [
+          "wheel.key.accept",
+          "include_denied=",
+          true,
+          "include_rejected=",
+          true,
+        ];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addMenuItemWheelKeyAccept2 (pMenu, pMinionId, pStatusField) {
-    pMenu.addMenuItem(() => {
-      const status = pStatusField.innerText;
-      if (status === "rejected") {
-        return "Accept key...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.accept"];
-      const status = pStatusField.innerText;
-      if (status === "denied") {
-        cmdArr.push("include_denied=", true);
-      } else if (status === "rejected") {
-        cmdArr.push("include_rejected=", true);
-      }
-      this.runCommand("", pMinionId, cmdArr);
-    });
+    pMenu.addMenuItem(
+      () => {
+        const status = pStatusField.innerText;
+        if (status === "rejected") {
+          return "Accept key...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.accept"];
+        const status = pStatusField.innerText;
+        if (status === "denied") {
+          cmdArr.push("include_denied=", true);
+        } else if (status === "rejected") {
+          cmdArr.push("include_rejected=", true);
+        }
+        this.runCommand("", pMinionId, cmdArr);
+      },
+    );
   }
 
   _addMenuItemWheelKeyReject (pMenu, pMinionId, pStatusField) {
-    pMenu.addMenuItem(() => {
-      const status = pStatusField.innerText;
-      if (status === "accepted" || status === "denied" || status === "unaccepted") {
-        return "Reject key...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.reject"];
-      const status = pStatusField.innerText;
-      if (status === "accepted") {
-        cmdArr.push("include_accepted=", true);
-      } else if (status === "denied") {
-        cmdArr.push("include_denied=", true);
-      }
-      this.runCommand("", pMinionId, cmdArr);
-    });
+    pMenu.addMenuItem(
+      () => {
+        const status = pStatusField.innerText;
+        if (
+          status === "accepted" ||
+          status === "denied" ||
+          status === "unaccepted"
+        ) {
+          return "Reject key...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.reject"];
+        const status = pStatusField.innerText;
+        if (status === "accepted") {
+          cmdArr.push("include_accepted=", true);
+        } else if (status === "denied") {
+          cmdArr.push("include_denied=", true);
+        }
+        this.runCommand("", pMinionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyRejectAllUnaccepted () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.nrUnaccepted > 0) {
-        return "Reject all unaccepted keys...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.reject"];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.nrUnaccepted > 0) {
+          return "Reject all unaccepted keys...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.reject"];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyRejectAllUnacceptedAccepted () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.nrAccepted) {
-        return null;
-      }
-      if (this.nrUnaccepted > 0) {
-        return "Reject all unaccepted+accepted keys...";
-      }
-      return "Reject all accepted keys...";
-    }, () => {
-      const cmdArr = ["wheel.key.reject", "include_accepted=", true];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.nrAccepted) {
+          return null;
+        }
+        if (this.nrUnaccepted > 0) {
+          return "Reject all unaccepted+accepted keys...";
+        }
+        return "Reject all accepted keys...";
+      },
+      () => {
+        const cmdArr = ["wheel.key.reject", "include_accepted=", true];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyRejectAllUnacceptedDenied () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.nrDenied) {
-        return null;
-      }
-      if (this.nrUnaccepted > 0) {
-        return "Reject all unaccepted+denied keys...";
-      }
-      return "Reject all denied keys...";
-    }, () => {
-      const cmdArr = ["wheel.key.reject", "include_denied=", true];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.nrDenied) {
+          return null;
+        }
+        if (this.nrUnaccepted > 0) {
+          return "Reject all unaccepted+denied keys...";
+        }
+        return "Reject all denied keys...";
+      },
+      () => {
+        const cmdArr = ["wheel.key.reject", "include_denied=", true];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyRejectAllUnacceptedAcceptedDenied () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.nrAccepted || !this.nrDenied) {
-        return null;
-      }
-      if (this.nrUnaccepted > 0) {
-        return "Reject all unaccepted+accepted+denied keys...";
-      }
-      return "Reject all accepted+denied keys...";
-    }, () => {
-      const cmdArr = ["wheel.key.reject", "include_accepted=", true, "include_denied=", true];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.nrAccepted || !this.nrDenied) {
+          return null;
+        }
+        if (this.nrUnaccepted > 0) {
+          return "Reject all unaccepted+accepted+denied keys...";
+        }
+        return "Reject all accepted+denied keys...";
+      },
+      () => {
+        const cmdArr = [
+          "wheel.key.reject",
+          "include_accepted=",
+          true,
+          "include_denied=",
+          true,
+        ];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   _addMenuItemWheelKeyDelete (pMenu, pMinionId, pStatusField) {
-    pMenu.addMenuItem(() => {
-      const status = pStatusField.innerText;
-      if (status === "accepted" || status === "rejected" || status === "unaccepted" || status === "denied") {
-        return "Delete key...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.delete"];
-      this.runCommand("", pMinionId, cmdArr);
-    });
+    pMenu.addMenuItem(
+      () => {
+        const status = pStatusField.innerText;
+        if (
+          status === "accepted" ||
+          status === "rejected" ||
+          status === "unaccepted" ||
+          status === "denied"
+        ) {
+          return "Delete key...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.delete"];
+        this.runCommand("", pMinionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemWheelKeyDeleteAll () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.nrAccepted > 0 || this.nrUnaccepted > 0 || this.nrRejected > 0 || this.nrDenied > 0) {
-        return "Delete all keys...";
-      }
-      return null;
-    }, () => {
-      const cmdArr = ["wheel.key.delete"];
-      this.runCommand("", "*", cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (
+          this.nrAccepted > 0 ||
+          this.nrUnaccepted > 0 ||
+          this.nrRejected > 0 ||
+          this.nrDenied > 0
+        ) {
+          return "Delete all keys...";
+        }
+        return null;
+      },
+      () => {
+        const cmdArr = ["wheel.key.delete"];
+        this.runCommand("", "*", cmdArr);
+      },
+    );
   }
 
   handleSaltAuthEvent (pData) {
-
     if (this.playOrPause !== "play") {
       return;
     }
 
-    const tr = this.table.querySelector("tr#" + Utils.getIdFromMinionId(pData.id));
+    const tr = this.table.querySelector(
+      "tr#" + Utils.getIdFromMinionId(pData.id),
+    );
     const minionsDict = Utils.getStorageItemObject("session", "minions_txt");
     if (tr) {
       const statusTd = tr.querySelector(".status");
@@ -695,7 +841,9 @@ export class KeysPanel extends Panel {
 
     // we do not have the fingerprint yet
     // pre-fill with a dummy value and then retrieve the actual value
-    const tr2 = this.table.querySelector("tr#" + Utils.getIdFromMinionId(pData.id));
+    const tr2 = this.table.querySelector(
+      "tr#" + Utils.getIdFromMinionId(pData.id),
+    );
     if (!tr2) {
       return;
     }
@@ -707,15 +855,21 @@ export class KeysPanel extends Panel {
     if (!tr2.dataset.fingerprintKnown) {
       fingerprintSpan.innerText = "(refresh page for fingerprint)";
       const wheelKeyFingerPromise = this.api.getWheelKeyFinger(pData.id);
-      wheelKeyFingerPromise.then((pWheelKeyFingerData) => {
-        this._handleWheelKeyFinger(pWheelKeyFingerData);
-        return true;
-      }, (pWheelKeyFingerMsg) => {
-        const wheelKeyFingerData = {"return": [{"data": {"return": {"minions": {}}}}]};
-        wheelKeyFingerData.return[0]["data"]["return"]["minions"][pData.id] = JSON.stringify(pWheelKeyFingerMsg);
-        this._handleWheelKeyFinger(wheelKeyFingerData);
-        return false;
-      });
+      wheelKeyFingerPromise.then(
+        (pWheelKeyFingerData) => {
+          this._handleWheelKeyFinger(pWheelKeyFingerData);
+          return true;
+        },
+        (pWheelKeyFingerMsg) => {
+          const wheelKeyFingerData = {
+            return: [{ data: { return: { minions: {} } } }],
+          };
+          wheelKeyFingerData.return[0]["data"]["return"]["minions"][pData.id] =
+            JSON.stringify(pWheelKeyFingerMsg);
+          this._handleWheelKeyFinger(wheelKeyFingerData);
+          return false;
+        },
+      );
     }
   }
 

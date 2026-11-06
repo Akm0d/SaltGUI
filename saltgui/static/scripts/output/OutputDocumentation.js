@@ -1,13 +1,11 @@
 /* global */
 
-import {Output} from "./Output.js";
-import {Utils} from "../Utils.js";
+import { Output } from "./Output.js";
+import { Utils } from "../Utils.js";
 
 export class OutputDocumentation {
-
   // test whether the returned data matches the requested data
   static _isDocuKeyMatch (pKey, pFilterKey) {
-
     // user may already have typed the "."
     // but does not know what to type next
     if (pFilterKey && pFilterKey.endsWith(".")) {
@@ -33,14 +31,12 @@ export class OutputDocumentation {
     return false;
   }
 
-
   // we only treat output as documentation output when it sticks to strict rules
   // all minions must return strings
   // and when its key matches the requested documentation
   // empty values are allowed due to errors in the documentation
   // 'output' is needed like this to prevent an error during testing
   static isDocumentationOutput (pResponse, pCommandCmd, pCommandArg) {
-
     if (!Output.isOutputFormatAllowed("doc")) {
       return false;
     }
@@ -49,7 +45,11 @@ export class OutputDocumentation {
     // too many false positives otherwise
     // actually so limited that no one noticed for 5 years
     // e.g. pillar.items
-    if (["sys.doc", "runners.doc.runner", "runners.doc.wheel"].indexOf(pCommandCmd) < 0) {
+    if (
+      ["sys.doc", "runners.doc.runner", "runners.doc.wheel"].indexOf(
+        pCommandCmd,
+      ) < 0
+    ) {
       return false;
     }
 
@@ -59,7 +59,6 @@ export class OutputDocumentation {
     const commandArg = OutputDocumentation._reduceFilterKey(pCommandArg);
 
     for (const minionId of Object.keys(pResponse)) {
-
       const output = pResponse[minionId];
 
       if (!output) {
@@ -100,7 +99,6 @@ export class OutputDocumentation {
     return result;
   }
 
-
   // reduce the search key to match the data in the response
   static _reduceFilterKey (pFilterKey) {
     if (pFilterKey === "wheel") {
@@ -121,7 +119,6 @@ export class OutputDocumentation {
 
     return pFilterKey;
   }
-
 
   // documentation is requested from all targetted minions
   // these all return roughly the same output
@@ -148,7 +145,6 @@ export class OutputDocumentation {
 
     let selectedMinion = null;
     for (const minionId of Object.keys(pResponse)) {
-
       // When we already found the documentation ignore all others
       if (selectedMinion) {
         delete pResponse[minionId];
@@ -167,7 +163,6 @@ export class OutputDocumentation {
       // and/or RUNNERS.DOC.WHEEL.
       const minionResponse = pResponse[minionId];
       for (const key of Object.keys(minionResponse)) {
-
         // is this what we were looking for?
         if (!OutputDocumentation._isDocuKeyMatch(key, pFilterKey)) {
           // no match, ignore the whole entry
@@ -202,15 +197,12 @@ export class OutputDocumentation {
 
   // add the output of a documentation command to the display
   static addDocumentationOutput (pOutputContainer, pResponse) {
-
     // we expect no minionIds present
     // as it should have been reduced already
     for (const minionId of Object.keys(pResponse)) {
-
       const minionResponse = pResponse[minionId];
 
       for (const key of Object.keys(minionResponse).sort()) {
-
         let out = minionResponse[key];
         if (out === null) {
           continue;
@@ -245,9 +237,9 @@ export class OutputDocumentation {
         // e.g. in "sys.doc pkg.install"
         while (out.includes(".. _")) {
           // take only a line containing ".. _"
-          const reference = out.
-            replace(/^(?:.|\n|\r)*[.][.] _/m, "").
-            replace(/(?:\n|\r)(?:.|\n|\r)*$/m, "");
+          const reference = out
+            .replace(/^(?:.|\n|\r)*[.][.] _/m, "")
+            .replace(/(?:\n|\r)(?:.|\n|\r)*$/m, "");
           const words = reference.split(": ");
           if (words.length !== 2) {
             /* istanbul ignore next */
@@ -261,7 +253,12 @@ export class OutputDocumentation {
           while (out.includes(link + "_")) {
             out = out.replace(
               link + "_",
-              "<a href='" + target + "' target='_blank' rel='noopener'>" + link + "</a>");
+              "<a href='" +
+                target +
+                "' target='_blank' rel='noopener'>" +
+                link +
+                "</a>",
+            );
           }
           // remove the item from the link table
           out = out.replace(".. _" + reference, "");
@@ -270,12 +267,18 @@ export class OutputDocumentation {
         // replace ``......``
         // e.g. in "sys.doc state.apply"
         // named groups are only introduced in ES9/2018
-        out = out.replace(/``([^`]*)``/g, "<span class='doc-inline-code'>$1</span>");
+        out = out.replace(
+          /``([^`]*)``/g,
+          "<span class='doc-inline-code'>$1</span>",
+        );
 
         // replace `......`
         // e.g. in "sys.doc state.apply"
         // named groups are only introduced in ES9/2018
-        out = out.replace(/`([^`]*)`/g, "<span class='doc-inline-highlight'>$1</span>");
+        out = out.replace(
+          /`([^`]*)`/g,
+          "<span class='doc-inline-highlight'>$1</span>",
+        );
 
         // remove whitespace at end of lines
         out = out.replace(/  *\n/gm, "");
@@ -284,9 +287,12 @@ export class OutputDocumentation {
         out = out.replace(/\n\n\n*/gm, "\n\n");
 
         pOutputContainer.innerHTML +=
-          "<div><span class='minion-id'>" + key + "</span>:<br/><pre style='height: initial; overflow-y: initial;'>" + out + "</pre></div>";
+          "<div><span class='minion-id'>" +
+          key +
+          "</span>:<br/><pre style='height: initial; overflow-y: initial;'>" +
+          out +
+          "</pre></div>";
       }
     }
   }
-
 }

@@ -7,16 +7,19 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@babel/core": "^7.29.0",
+    "@babel/core": "^7.29.13",
     "@babel/preset-env": "^7.29.2",
-    "@babel/register": "^7.28.6",
+    "@babel/register": "^7.29.13",
     "@eslint/js": "^9.39.2",
     "babel-plugin-istanbul": "^8.0.0",
     "chai": "^6.2.2",
     "eslint": "^10.1.0",
     "eslint-plugin-compat": "^7.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "mocha": "^11.7.5",
     "nyc": "^18.0.0",
+    "prettier": "^3.9.10",
     "puppeteer": "^24.40.0",
     "stylelint": "^14.0.1",
     "stylelint-config-standard": "^29.0.0",
@@ -73,9 +76,24 @@
     "test:unit": "mocha --require @babel/register --trace-warnings --check-leaks --reporter spec tests/unit/",
     "test:functional": "mocha --bail --trace-warnings --check-leaks --reporter spec tests/functional/",
     "test:coverage": "nyc mocha --require @babel/register --trace-warnings --check-leaks --reporter spec tests/unit/",
-    "test:year": "grep -e `date +%y` docs/LICENSE.md"
+    "test:year": "grep -e `date +%y` docs/LICENSE.md",
+    "format": "prettier --write \"saltgui/static/**/*.{js,css,html}\"",
+    "prepare": "husky"
   },
   "dependencies": {
-    "jsonpath-plus": "^11.2.2"
+    "jsonpath-plus": "^11.3.0"
+  },
+  "lint-staged": {
+    "saltgui/static/scripts/**/*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "saltgui/static/stylesheets/**/*.css": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "saltgui/static/**/*.html": [
+      "prettier --write"
+    ]
   }
 }

@@ -1,14 +1,13 @@
 /* global */
 
-import {BeaconsPanel} from "./Beacons.js";
-import {Character} from "../Character.js";
-import {DropDownMenu} from "../DropDown.js";
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { BeaconsPanel } from "./Beacons.js";
+import { Character } from "../Character.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class BeaconsMinionPanel extends Panel {
-
   constructor () {
     super("beacons-minion");
 
@@ -28,7 +27,7 @@ export class BeaconsMinionPanel extends Panel {
       "The content of column 'Value' is automatically refreshed.",
       "The content of column 'Config' is simplified to reduce its formatted size.",
       "Note that some beacons produce multiple values, e.g. one per disk.",
-      "In that case, effectively only one of the values is visible here."
+      "In that case, effectively only one of the values is visible here.",
     ]);
     this.addTable(["-menu-", "Name", "Config", "Timestamp", "Value", "-help-"]);
     this.setTableSortable("Name", "asc");
@@ -46,38 +45,61 @@ export class BeaconsMinionPanel extends Panel {
 
     const localBeaconsListPromise = this.api.getLocalBeaconsList(minionId);
 
-    localBeaconsListPromise.then((pLocalBeaconsListData) => {
-      this._handleLocalBeaconsList(pLocalBeaconsListData, minionId);
-      return true;
-    }, (pLocalBeaconsListMsg) => {
-      this._handleLocalBeaconsList(JSON.stringify(pLocalBeaconsListMsg), minionId);
-      return false;
-    });
+    localBeaconsListPromise.then(
+      (pLocalBeaconsListData) => {
+        this._handleLocalBeaconsList(pLocalBeaconsListData, minionId);
+        return true;
+      },
+      (pLocalBeaconsListMsg) => {
+        this._handleLocalBeaconsList(
+          JSON.stringify(pLocalBeaconsListMsg),
+          minionId,
+        );
+        return false;
+      },
+    );
 
     BeaconsMinionPanel.getAvailableBeacons(this.api);
   }
 
   static getAvailableBeacons (pApi) {
-    const beaconsListAvailable = Utils.getStorageItem("session", "beacons_list_available");
+    const beaconsListAvailable = Utils.getStorageItem(
+      "session",
+      "beacons_list_available",
+    );
     if (!beaconsListAvailable) {
       // yes, we want the list from *all* minions
-      const localBeaconsListAvailablePromise = pApi.getLocalBeaconsListAvailable(null);
+      const localBeaconsListAvailablePromise =
+        pApi.getLocalBeaconsListAvailable(null);
 
-      localBeaconsListAvailablePromise.then((pLocalBeaconsListAvailableData) => {
-        BeaconsMinionPanel._handleBeaconsListAvailable(pLocalBeaconsListAvailableData);
-        return true;
-      }, (pLocalBeaconsListAvailableMsg) => {
-        // pretend nothing is available
-        Utils.warn("cannot retrieve beacons.list_available:", pLocalBeaconsListAvailableMsg);
-        Utils.setStorageItem("session", "beacons_list_available", "{\"_cnt\": 0}");
-        return false;
-      });
+      localBeaconsListAvailablePromise.then(
+        (pLocalBeaconsListAvailableData) => {
+          BeaconsMinionPanel._handleBeaconsListAvailable(
+            pLocalBeaconsListAvailableData,
+          );
+          return true;
+        },
+        (pLocalBeaconsListAvailableMsg) => {
+          // pretend nothing is available
+          Utils.warn(
+            "cannot retrieve beacons.list_available:",
+            pLocalBeaconsListAvailableMsg,
+          );
+          Utils.setStorageItem(
+            "session",
+            "beacons_list_available",
+            '{"_cnt": 0}',
+          );
+          return false;
+        },
+      );
     }
   }
 
   static _handleBeaconsListAvailable (pLocalBeaconsListAvailableData) {
-    const allBeacons = {"_cnt": 0, "_offline": 0};
-    const localBeaconsListAvailableData = pLocalBeaconsListAvailableData.return[0];
+    const allBeacons = { _cnt: 0, _offline: 0 };
+    const localBeaconsListAvailableData =
+      pLocalBeaconsListAvailableData.return[0];
     // pretend that there is only one list of known beacons
     for (const minionId in localBeaconsListAvailableData) {
       if (typeof localBeaconsListAvailableData[minionId] !== "object") {
@@ -105,7 +127,12 @@ export class BeaconsMinionPanel extends Panel {
 
   updateFooter () {
     // update the footer
-    const txt = Utils.txtZeroOneMany(this.nrBeacons, "No beacons", "{0} beacon", "{0} beacons");
+    const txt = Utils.txtZeroOneMany(
+      this.nrBeacons,
+      "No beacons",
+      "{0} beacon",
+      "{0} beacons",
+    );
     this.setMsg(txt);
   }
 
@@ -160,8 +187,18 @@ export class BeaconsMinionPanel extends Panel {
         delete beacon.enabled;
       }
 
-      this._addMenuItemBeaconsDisableBeaconWhenNeeded(beaconMenu, pMinionId, beaconName, beacon);
-      this._addMenuItemBeaconsEnableBeaconWhenNeeded(beaconMenu, pMinionId, beaconName, beacon);
+      this._addMenuItemBeaconsDisableBeaconWhenNeeded(
+        beaconMenu,
+        pMinionId,
+        beaconName,
+        beacon,
+      );
+      this._addMenuItemBeaconsEnableBeaconWhenNeeded(
+        beaconMenu,
+        pMinionId,
+        beaconName,
+        beacon,
+      );
       this._addMenuItemBeaconsDelete(beaconMenu, pMinionId, beaconName);
 
       // menu comes before this data on purpose
@@ -181,12 +218,18 @@ export class BeaconsMinionPanel extends Panel {
       tr.appendChild(beaconConfigTd);
 
       const beaconTimestampTd = Utils.createTd();
-      const beaconTimestampSpan = Utils.createSpan(["beacon-timestamp", "beacon-waiting"], initialTimestamp);
+      const beaconTimestampSpan = Utils.createSpan(
+        ["beacon-timestamp", "beacon-waiting"],
+        initialTimestamp,
+      );
       beaconTimestampTd.appendChild(beaconTimestampSpan);
       tr.appendChild(beaconTimestampTd);
       tr.beaconTimestampSpan = beaconTimestampSpan;
 
-      const beaconValueTd = Utils.createTd(["beacon-value", "beacon-waiting"], initialValue);
+      const beaconValueTd = Utils.createTd(
+        ["beacon-value", "beacon-waiting"],
+        initialValue,
+      );
       tr.appendChild(beaconValueTd);
       tr.beaconValueTd = beaconValueTd;
 
@@ -203,7 +246,11 @@ export class BeaconsMinionPanel extends Panel {
       });
 
       const helpButtonTd = Utils.createTd("help-button");
-      const helpButtonSpan = Utils.createSpan("warning-button", "", this.key + "-" + beaconName + "-help-button");
+      const helpButtonSpan = Utils.createSpan(
+        "warning-button",
+        "",
+        this.key + "-" + beaconName + "-help-button",
+      );
       Panel.addPrefixIcon(helpButtonSpan, Character.WARNING_SIGN);
       helpButtonSpan.style.display = "none";
       helpButtonSpan.style.cursor = "help";
@@ -218,29 +265,35 @@ export class BeaconsMinionPanel extends Panel {
   }
 
   _addPanelMenuItemBeaconsDisableWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.beaconsEnabled) {
-        return null;
-      }
-      return "Disable beacons...";
-    }, () => {
-      const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
-      const cmdArr = ["beacons.disable"];
-      this.runCommand("", minionId, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.beaconsEnabled) {
+          return null;
+        }
+        return "Disable beacons...";
+      },
+      () => {
+        const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
+        const cmdArr = ["beacons.disable"];
+        this.runCommand("", minionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemBeaconsEnableWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.beaconsEnabled) {
-        return null;
-      }
-      return "Enable beacons...";
-    }, () => {
-      const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
-      const cmdArr = ["beacons.enable"];
-      this.runCommand("", minionId, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.beaconsEnabled) {
+          return null;
+        }
+        return "Enable beacons...";
+      },
+      () => {
+        const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
+        const cmdArr = ["beacons.enable"];
+        this.runCommand("", minionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemBeaconsAdd () {
@@ -348,9 +401,11 @@ export class BeaconsMinionPanel extends Panel {
       // event has a different timestamp
       // normal situation, no reason for panic
     } else if (tr.prevTag && tr.prevTag !== pTag) {
-      helpText = "Multiple events seen with same timestamp, but different tag\nThis usually means that there is more data than can be seen here\nThere may e.g. be more than one disk or networkinterface\nBut only the most recently reported one is actually shown";
+      helpText =
+        "Multiple events seen with same timestamp, but different tag\nThis usually means that there is more data than can be seen here\nThere may e.g. be more than one disk or networkinterface\nBut only the most recently reported one is actually shown";
     } else if (tr.prevData && tr.prevData !== pData) {
-      helpText = "Multiple events seen with same timestamp, same tag, but different data\nThis usually means that there is more data than can be seen here\nThere may e.g. be more than one disk or networkinterface\nBut only the most recently reported one is actually shown";
+      helpText =
+        "Multiple events seen with same timestamp, same tag, but different data\nThis usually means that there is more data than can be seen here\nThere may e.g. be more than one disk or networkinterface\nBut only the most recently reported one is actually shown";
     } else {
       // duplicate of previous event, never mind for now
     }

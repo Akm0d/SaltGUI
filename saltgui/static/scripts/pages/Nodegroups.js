@@ -1,14 +1,19 @@
 /* global */
 
-import {JobsSummaryPanel} from "../panels/JobsSummary.js";
-import {NodegroupsPanel} from "../panels/Nodegroups.js";
-import {Page} from "./Page.js";
-import {Utils} from "../Utils.js";
+import { JobsSummaryPanel } from "../panels/JobsSummary.js";
+import { NodegroupsPanel } from "../panels/Nodegroups.js";
+import { Page } from "./Page.js";
+import { Utils } from "../Utils.js";
 
 export class NodegroupsPage extends Page {
-
   constructor (pRouter) {
-    super("nodegroups", "Nodegroups", "page-nodegroups", "button-nodegroups", pRouter);
+    super(
+      "nodegroups",
+      "Nodegroups",
+      "page-nodegroups",
+      "button-nodegroups",
+      pRouter,
+    );
 
     this.nodegroups = new NodegroupsPanel();
     super.addPanel(this.nodegroups);
@@ -26,7 +31,7 @@ export class NodegroupsPage extends Page {
 
   /* eslint-disable class-methods-use-this */
   isVisible () {
-  /* eslint-enable class-methods-use-this */
+    /* eslint-enable class-methods-use-this */
     // show nodegroups menu item if nodegroups defined
     const nodegroups = Utils.getStorageItemObject("session", "nodegroups");
     return Object.keys(nodegroups).length > 0;

@@ -1,13 +1,12 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {DropDownMenu} from "../DropDown.js";
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class OrchestrationsPanel extends Panel {
-
   constructor () {
     super("orchestrations");
 
@@ -20,13 +19,21 @@ export class OrchestrationsPanel extends Panel {
   }
 
   onShow () {
-    const runnerStateOrchestrateShowSlsPromise = this.router.api.getRunnerStateOrchestrateShowSls();
+    const runnerStateOrchestrateShowSlsPromise =
+      this.router.api.getRunnerStateOrchestrateShowSls();
 
-    runnerStateOrchestrateShowSlsPromise.then((pStateOrchestrateShowSlsData) => {
-      this._handleOrchestrationsStateOrchestrateShowSls(pStateOrchestrateShowSlsData);
-    }, (pStateOrchestrateShowSlsMsg) => {
-      this._handleOrchestrationsStateOrchestrateShowSls(JSON.stringify(pStateOrchestrateShowSlsMsg));
-    });
+    runnerStateOrchestrateShowSlsPromise.then(
+      (pStateOrchestrateShowSlsData) => {
+        this._handleOrchestrationsStateOrchestrateShowSls(
+          pStateOrchestrateShowSlsData,
+        );
+      },
+      (pStateOrchestrateShowSlsMsg) => {
+        this._handleOrchestrationsStateOrchestrateShowSls(
+          JSON.stringify(pStateOrchestrateShowSlsMsg),
+        );
+      },
+    );
   }
 
   _handleOrchestrationsStateOrchestrateShowSls (pStateOrchestrateShowSlsData) {
@@ -37,7 +44,7 @@ export class OrchestrationsPanel extends Panel {
     // should we update it or just use from cache (see commandbox) ?
     let orchestrations = pStateOrchestrateShowSlsData.return[0];
     if (!orchestrations) {
-      orchestrations = {"dummy": {}};
+      orchestrations = { dummy: {} };
     }
     orchestrations = orchestrations[Object.keys(orchestrations)[0]];
     if (!orchestrations) {
@@ -46,9 +53,17 @@ export class OrchestrationsPanel extends Panel {
 
     if (Array.isArray(orchestrations)) {
       // that's a list of errors, show them
-      this.setWarningText("warn", "There " +
-        Utils.txtZeroOneMany(orchestrations.length, "are no errors", "is an error", "are errors") +
-        " in the orchestration configuration");
+      this.setWarningText(
+        "warn",
+        "There " +
+          Utils.txtZeroOneMany(
+            orchestrations.length,
+            "are no errors",
+            "is an error",
+            "are errors",
+          ) +
+          " in the orchestration configuration",
+      );
       for (const msg of orchestrations) {
         const tr0 = Utils.createTr();
         const td = Utils.createTd("name", msg);
@@ -56,8 +71,12 @@ export class OrchestrationsPanel extends Panel {
         tr0.appendChild(td);
         this.table.tBodies[0].appendChild(tr0);
       }
-      const txt = Utils.txtZeroOneMany(orchestrations.length,
-        "No errors", "{0} error", "{0} errors");
+      const txt = Utils.txtZeroOneMany(
+        orchestrations.length,
+        "No errors",
+        "{0} error",
+        "{0} errors",
+      );
       this.setMsg(txt);
       return;
     }
@@ -78,13 +97,16 @@ export class OrchestrationsPanel extends Panel {
       }
     }
 
-    const txt = Utils.txtZeroOneMany(nrOrchestrations,
-      "No orchestrations", "{0} orchestration", "{0} orchestrations");
+    const txt = Utils.txtZeroOneMany(
+      nrOrchestrations,
+      "No orchestrations",
+      "{0} orchestration",
+      "{0} orchestrations",
+    );
     this.setMsg(txt);
   }
 
   _addOrchestration (pOrchestrationName, pOrchestrations) {
-
     const steps = [];
     let ok = false;
     for (const name of Object.keys(pOrchestrations)) {
@@ -146,7 +168,12 @@ export class OrchestrationsPanel extends Panel {
         pClickEvent.stopPropagation();
       });
 
-      tr1.appendChild(Utils.createTd("name", Character.NO_BREAK_SPACE.repeat(3) + step.__key__));
+      tr1.appendChild(
+        Utils.createTd(
+          "name",
+          Character.NO_BREAK_SPACE.repeat(3) + step.__key__,
+        ),
+      );
 
       // calculate targettype
       const targetType = step["tgt_type"];
@@ -214,7 +241,12 @@ export class OrchestrationsPanel extends Panel {
 
   _addMenuItemApplyOrchestrationTest (pMenu, pOrchestrationName) {
     pMenu.addMenuItem("Test orchestration...", () => {
-      const cmdArr = ["runners.state.orchestrate", "test=", true, pOrchestrationName];
+      const cmdArr = [
+        "runners.state.orchestrate",
+        "test=",
+        true,
+        pOrchestrationName,
+      ];
       this.runCommand("", "", cmdArr);
     });
   }

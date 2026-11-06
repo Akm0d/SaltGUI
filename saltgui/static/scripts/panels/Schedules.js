@@ -1,10 +1,9 @@
 /* global */
 
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class SchedulesPanel extends Panel {
-
   constructor () {
     super("schedules");
 
@@ -21,27 +20,42 @@ export class SchedulesPanel extends Panel {
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
     const localScheduleListPromise = this.api.getLocalScheduleList(null);
 
-    const selectVisible = Utils.getStorageItemBoolean("session", "select_visible", false);
+    const selectVisible = Utils.getStorageItemBoolean(
+      "session",
+      "select_visible",
+      false,
+    );
     this.showSelectColumn(selectVisible);
 
     this.nrMinions = 0;
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      this._handleSchedulesWheelKeyListAll(pWheelKeyListAllData);
-      localScheduleListPromise.then((pLocalScheduleListData) => {
-        this.updateMinions(pLocalScheduleListData);
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        this._handleSchedulesWheelKeyListAll(pWheelKeyListAllData);
+        localScheduleListPromise.then(
+          (pLocalScheduleListData) => {
+            this.updateMinions(pLocalScheduleListData);
+            return true;
+          },
+          (pLocalScheduleListMsg) => {
+            const allMinionsErr = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions,
+              JSON.stringify(pLocalScheduleListMsg),
+            );
+            this.updateMinions({ return: [allMinionsErr] });
+            return false;
+          },
+        );
         return true;
-      }, (pLocalScheduleListMsg) => {
-        const allMinionsErr = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions, JSON.stringify(pLocalScheduleListMsg));
-        this.updateMinions({"return": [allMinionsErr]});
+      },
+      (pWheelKeyListAllMsg) => {
+        this._handleSchedulesWheelKeyListAll(
+          JSON.stringify(pWheelKeyListAllMsg),
+        );
+        Utils.ignorePromise(localScheduleListPromise);
         return false;
-      });
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      this._handleSchedulesWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
-      Utils.ignorePromise(localScheduleListPromise);
-      return false;
-    });
+      },
+    );
   }
 
   // This one has some historic ballast:
@@ -52,7 +66,7 @@ export class SchedulesPanel extends Panel {
       return pData;
     }
 
-    const ret = {"enabled": true, "schedules": {}};
+    const ret = { enabled: true, schedules: {} };
 
     for (const scheduleName in pData) {
       // "enabled" is always a boolean (when present)
@@ -62,7 +76,10 @@ export class SchedulesPanel extends Panel {
       }
 
       // correct for empty list that returns this dummy value
-      if (scheduleName === "schedule" && JSON.stringify(pData[scheduleName]) === "{}") {
+      if (
+        scheduleName === "schedule" &&
+        JSON.stringify(pData[scheduleName]) === "{}"
+      ) {
         continue;
       }
 
@@ -95,7 +112,12 @@ export class SchedulesPanel extends Panel {
       this._addMenuItemShowSchedules(minionTr.dropdownmenu, minionId);
 
       minionTr.addEventListener("click", (pClickEvent) => {
-        this.router.goTo("schedules-minion", {"minionid": minionId}, undefined, pClickEvent);
+        this.router.goTo(
+          "schedules-minion",
+          { minionid: minionId },
+          undefined,
+          pClickEvent,
+        );
         pClickEvent.stopPropagation();
       });
     }
@@ -106,14 +128,15 @@ export class SchedulesPanel extends Panel {
   updateOfflineMinion (pMinionId, pMinionsDict) {
     super.updateOfflineMinion(pMinionId, pMinionsDict, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     // force same columns on all rows
     minionTr.appendChild(Utils.createTd("scheduleinfo"));
   }
 
   updateMinion (pMinionData, pMinionId, pAllMinionsGrains) {
-
     pMinionData = SchedulesPanel.fixSchedulesMinion(pMinionData);
 
     super.updateMinion(pMinionData, pMinionId, pAllMinionsGrains, true);
@@ -129,8 +152,12 @@ export class SchedulesPanel extends Panel {
     let scheduleinfo;
     if (typeof pMinionData === "object") {
       cnt = Object.keys(pMinionData.schedules).length;
-      scheduleinfo = Utils.txtZeroOneMany(cnt,
-        "no schedules", "{0} schedule", "{0} schedules");
+      scheduleinfo = Utils.txtZeroOneMany(
+        cnt,
+        "no schedules",
+        "{0} schedule",
+        "{0} schedules",
+      );
       if (!pMinionData.enabled) {
         scheduleinfo += " (disabled)";
       }
@@ -152,7 +179,12 @@ export class SchedulesPanel extends Panel {
 
   _addMenuItemShowSchedules (pMenu, pMinionId) {
     pMenu.addMenuItem("Show schedules", (pClickEvent) => {
-      this.router.goTo("schedules-minion", {"minionid": pMinionId}, undefined, pClickEvent);
+      this.router.goTo(
+        "schedules-minion",
+        { minionid: pMinionId },
+        undefined,
+        pClickEvent,
+      );
     });
   }
 }

@@ -1,11 +1,10 @@
 /* global jsonPath */
 
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class GrainsPanel extends Panel {
-
   constructor () {
     super("grains");
 
@@ -15,10 +14,18 @@ export class GrainsPanel extends Panel {
     this.addHelpButton([
       "The content of specific well-known grains can be made visible in",
       "columns by configuring their name in the server-side configuration file.",
-      "See README.md for more details."
+      "See README.md for more details.",
     ]);
     this.addWarningField();
-    this.addTable(["-select-", "-menu-", "Minion", "Status", "Salt version", "OS version", "Grains"]);
+    this.addTable([
+      "-select-",
+      "-menu-",
+      "Minion",
+      "Status",
+      "Salt version",
+      "OS version",
+      "Grains",
+    ]);
 
     // cannot initialize sorting before all columns are present
     // this.setTableSortable("Minion", "asc");
@@ -27,12 +34,19 @@ export class GrainsPanel extends Panel {
   }
 
   onShow () {
-    const selectVisible = Utils.getStorageItemBoolean("session", "select_visible", false);
+    const selectVisible = Utils.getStorageItemBoolean(
+      "session",
+      "select_visible",
+      false,
+    );
     this.showSelectColumn(selectVisible);
 
     if (this.previewColumsAdded !== true) {
       // collect the list of displayed extra grains
-      this.previewGrains = Utils.getStorageItemList("session", "preview_grains");
+      this.previewGrains = Utils.getStorageItemList(
+        "session",
+        "preview_grains",
+      );
 
       // add the preview columns (before we sort the table)
       // the div is not added to the DOM yet
@@ -49,30 +63,50 @@ export class GrainsPanel extends Panel {
     // initialize sorting after all columns are present
     this.setTableSortable("Minion", "asc");
 
-    const useCacheGrains = Utils.getStorageItemBoolean("session", "use_cache_for_grains", false);
-    this.setWarningText("info", useCacheGrains ? "the content of this screen is based on cached grains info, minion status or grain info may not be accurate" : "");
+    const useCacheGrains = Utils.getStorageItemBoolean(
+      "session",
+      "use_cache_for_grains",
+      false,
+    );
+    this.setWarningText(
+      "info",
+      useCacheGrains
+        ? "the content of this screen is based on cached grains info, minion status or grain info may not be accurate"
+        : "",
+    );
 
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
-    const localGrainsItemsPromise = useCacheGrains ? this.api.getRunnerCacheGrains(null) : this.api.getLocalGrainsItems(null);
+    const localGrainsItemsPromise = useCacheGrains
+      ? this.api.getRunnerCacheGrains(null)
+      : this.api.getLocalGrainsItems(null);
 
     this.nrMinions = 0;
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      this._handleGrainsWheelKeyListAll(pWheelKeyListAllData);
-      localGrainsItemsPromise.then((pLocalGrainsItemsData) => {
-        this.updateMinions(pLocalGrainsItemsData);
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        this._handleGrainsWheelKeyListAll(pWheelKeyListAllData);
+        localGrainsItemsPromise.then(
+          (pLocalGrainsItemsData) => {
+            this.updateMinions(pLocalGrainsItemsData);
+            return true;
+          },
+          (pLocalGrainsItemsMsg) => {
+            const allMinionsErr = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions,
+              JSON.stringify(pLocalGrainsItemsMsg),
+            );
+            this.updateMinions({ return: [allMinionsErr] });
+            return false;
+          },
+        );
         return true;
-      }, (pLocalGrainsItemsMsg) => {
-        const allMinionsErr = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions, JSON.stringify(pLocalGrainsItemsMsg));
-        this.updateMinions({"return": [allMinionsErr]});
+      },
+      (pWheelKeyListAllMsg) => {
+        this._handleGrainsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
+        Utils.ignorePromise(localGrainsItemsPromise);
         return false;
-      });
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      this._handleGrainsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
-      Utils.ignorePromise(localGrainsItemsPromise);
-      return false;
-    });
+      },
+    );
   }
 
   _handleGrainsWheelKeyListAll (pWheelKeyListAllData) {
@@ -86,7 +120,11 @@ export class GrainsPanel extends Panel {
 
     const minionIds = keys.minions.sort();
     for (const minionId of minionIds) {
-      const minionTr = this.addMinion(minionId, true, this.previewGrains.length);
+      const minionTr = this.addMinion(
+        minionId,
+        true,
+        this.previewGrains.length,
+      );
 
       // preliminary dropdown menu
       this._addMenuItemShowGrains(minionTr.dropdownmenu, minionId);
@@ -96,7 +134,12 @@ export class GrainsPanel extends Panel {
       }
 
       minionTr.addEventListener("click", (pClickEvent) => {
-        this.router.goTo("grains-minion", {"minionid": minionId}, undefined, pClickEvent);
+        this.router.goTo(
+          "grains-minion",
+          { minionid: minionId },
+          undefined,
+          pClickEvent,
+        );
         pClickEvent.stopPropagation();
       });
     }
@@ -107,7 +150,9 @@ export class GrainsPanel extends Panel {
   updateOfflineMinion (pMinionId, pMinionsDict) {
     super.updateOfflineMinion(pMinionId, pMinionsDict, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     // force same columns on all rows
     minionTr.appendChild(Utils.createTd("saltversion"));
@@ -121,7 +166,9 @@ export class GrainsPanel extends Panel {
   updateMinion (pMinionData, pMinionId, pAllMinionsGrains) {
     super.updateMinion(pMinionData, pMinionId, pAllMinionsGrains, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     if (typeof pMinionData === "object") {
       const cnt = Object.keys(pMinionData).length;
@@ -174,7 +221,12 @@ export class GrainsPanel extends Panel {
 
   _addMenuItemShowGrains (pMenu, pMinionId) {
     pMenu.addMenuItem("Show grains", (pClickEvent) => {
-      this.router.goTo("grains-minion", {"minionid": pMinionId}, undefined, pClickEvent);
+      this.router.goTo(
+        "grains-minion",
+        { minionid: pMinionId },
+        undefined,
+        pClickEvent,
+      );
     });
   }
 }

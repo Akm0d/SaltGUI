@@ -216,13 +216,21 @@ h1 {
 }
 
 @media (width >= 950px) {
-  .fullmenu { display: inline-block; }
-  .minimenu { display: none; }
+  .fullmenu {
+    display: inline-block;
+  }
+  .minimenu {
+    display: none;
+  }
 }
 
 @media (width < 950px) {
-  .fullmenu { display: none; }
-  .minimenu { display: inline-block; }
+  .fullmenu {
+    display: none;
+  }
+  .minimenu {
+    display: inline-block;
+  }
 }
 
 #warning {

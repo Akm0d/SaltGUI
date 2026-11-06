@@ -1,14 +1,13 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {DropDownMenu} from "../DropDown.js";
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {SchedulesPanel} from "./Schedules.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { SchedulesPanel } from "./Schedules.js";
+import { Utils } from "../Utils.js";
 
 export class SchedulesMinionPanel extends Panel {
-
   constructor () {
     super("schedules-minion");
 
@@ -37,13 +36,19 @@ export class SchedulesMinionPanel extends Panel {
 
     const localScheduleListPromise = this.api.getLocalScheduleList(minionId);
 
-    localScheduleListPromise.then((pLocalScheduleListData) => {
-      this._handleLocalScheduleList(pLocalScheduleListData, minionId);
-      return true;
-    }, (pLocalScheduleListMsg) => {
-      this._handleLocalScheduleList(JSON.stringify(pLocalScheduleListMsg), minionId);
-      return false;
-    });
+    localScheduleListPromise.then(
+      (pLocalScheduleListData) => {
+        this._handleLocalScheduleList(pLocalScheduleListData, minionId);
+        return true;
+      },
+      (pLocalScheduleListMsg) => {
+        this._handleLocalScheduleList(
+          JSON.stringify(pLocalScheduleListMsg),
+          minionId,
+        );
+        return false;
+      },
+    );
   }
 
   _handleLocalScheduleList (pLocalScheduleList, pMinionId) {
@@ -76,7 +81,6 @@ export class SchedulesMinionPanel extends Panel {
 
     const keys = Object.keys(schedules.schedules).sort();
     for (const scheduleName of keys) {
-
       const schedule = schedules.schedules[scheduleName];
 
       // simplify the schedule information
@@ -106,10 +110,25 @@ export class SchedulesMinionPanel extends Panel {
         scheduleModifyCmdArr.push(key + "=", value);
       }
       this._addMenuItemModifyJob(scheduleMenu, pMinionId, scheduleModifyCmdArr);
-      this._addMenuItemScheduleEnableJobWhenNeeded(scheduleMenu, pMinionId, scheduleName, schedule);
-      this._addMenuItemScheduleDisableJobWhenNeeded(scheduleMenu, pMinionId, scheduleName, schedule);
+      this._addMenuItemScheduleEnableJobWhenNeeded(
+        scheduleMenu,
+        pMinionId,
+        scheduleName,
+        schedule,
+      );
+      this._addMenuItemScheduleDisableJobWhenNeeded(
+        scheduleMenu,
+        pMinionId,
+        scheduleName,
+        schedule,
+      );
       this._addMenuItemScheduleDeleteJob(scheduleMenu, pMinionId, scheduleName);
-      this._addMenuItemScheduleRunJob(scheduleMenu, pMinionId, scheduleName, schedule);
+      this._addMenuItemScheduleRunJob(
+        scheduleMenu,
+        pMinionId,
+        scheduleName,
+        schedule,
+      );
 
       // menu comes before this data on purpose
       const scheduleValue = Output.formatObject(schedule);
@@ -128,35 +147,45 @@ export class SchedulesMinionPanel extends Panel {
       });
     }
 
-    const txt = Utils.txtZeroOneMany(keys.length,
-      "No schedules", "{0} schedule", "{0} schedules");
+    const txt = Utils.txtZeroOneMany(
+      keys.length,
+      "No schedules",
+      "{0} schedule",
+      "{0} schedules",
+    );
     this.setMsg(txt);
   }
 
   _addPanelMenuItemScheduleEnableWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.schedulesEnabled) {
-        return null;
-      }
-      return "Enable scheduler...";
-    }, () => {
-      const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
-      const cmdArr = ["schedule.enable"];
-      this.runCommand("", minionId, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.schedulesEnabled) {
+          return null;
+        }
+        return "Enable scheduler...";
+      },
+      () => {
+        const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
+        const cmdArr = ["schedule.enable"];
+        this.runCommand("", minionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemScheduleDisableWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.schedulesEnabled) {
-        return null;
-      }
-      return "Disable scheduler...";
-    }, () => {
-      const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
-      const cmdArr = ["schedule.disable"];
-      this.runCommand("", minionId, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.schedulesEnabled) {
+          return null;
+        }
+        return "Disable scheduler...";
+      },
+      () => {
+        const minionId = decodeURIComponent(Utils.getQueryParam("minionid"));
+        const cmdArr = ["schedule.disable"];
+        this.runCommand("", minionId, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemScheduleAddInterval () {
@@ -165,11 +194,16 @@ export class SchedulesMinionPanel extends Panel {
       const cmdArr = [
         "schedule.add",
         "<name>",
-        "function=", "<function>",
-        "seconds=", "<seconds>",
-        "minutes=", "<minutes>",
-        "hours=", "<hours>",
-        "days=", "<days>"
+        "function=",
+        "<function>",
+        "seconds=",
+        "<seconds>",
+        "minutes=",
+        "<minutes>",
+        "hours=",
+        "<hours>",
+        "days=",
+        "<days>",
       ];
       this.runCommand("", minionId, cmdArr);
     });
@@ -181,8 +215,10 @@ export class SchedulesMinionPanel extends Panel {
       const cmdArr = [
         "schedule.add",
         "<name>",
-        "function=", "<function>",
-        "cron=", "*/15 * * * *"
+        "function=",
+        "<function>",
+        "cron=",
+        "*/15 * * * *",
       ];
       this.runCommand("", minionId, cmdArr);
     });
@@ -194,10 +230,12 @@ export class SchedulesMinionPanel extends Panel {
       const cmdArr = [
         "schedule.add",
         "<name>",
-        "function=", "<function>",
-        "once=", new Date().toISOString().
-          replace(/[.].*/, ""),
-        "once_format=", "%Y-%m-%dT%H:%M:%S"
+        "function=",
+        "<function>",
+        "once=",
+        new Date().toISOString().replace(/[.].*/, ""),
+        "once_format=",
+        "%Y-%m-%dT%H:%M:%S",
       ];
       this.runCommand("", minionId, cmdArr);
     });
@@ -209,7 +247,12 @@ export class SchedulesMinionPanel extends Panel {
     });
   }
 
-  _addMenuItemScheduleEnableJobWhenNeeded (pMenu, pMinionId, pJobName, schedule) {
+  _addMenuItemScheduleEnableJobWhenNeeded (
+    pMenu,
+    pMinionId,
+    pJobName,
+    schedule,
+  ) {
     if (schedule.enabled !== false) {
       return;
     }
@@ -219,7 +262,12 @@ export class SchedulesMinionPanel extends Panel {
     });
   }
 
-  _addMenuItemScheduleDisableJobWhenNeeded (pMenu, pMinionId, pJobName, schedule) {
+  _addMenuItemScheduleDisableJobWhenNeeded (
+    pMenu,
+    pMinionId,
+    pJobName,
+    schedule,
+  ) {
     if (schedule.enabled === false) {
       return;
     }

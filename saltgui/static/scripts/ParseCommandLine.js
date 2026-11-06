@@ -20,7 +20,7 @@ import {Character} from "./Character.js";
 export class ParseCommandLine {
 
   static getPatJid () {
-    return /^[2-9]\d\d\d[01]\d[0-3]\d[0-2]\d[0-5]\d[0-5]\d\d\d\d\d\d\d$/;
+    return /^[2-9]\\d\\d\\d[01]\\d[0-3]\\d[0-2]\\d[0-5]\\d[0-5]\\d\\d\\d\\d\\d\\d\\d$/;
   }
 
   static getCommandFromCommandLine (pCommandLine) {
@@ -31,33 +31,23 @@ export class ParseCommandLine {
   }
 
   static parseCommandLine (pToRun, pArgsArray, pArgsObject) {
-
     const patPlaceHolder = /^<[a-z]+>/;
-
-    // note that "none" is not case-insensitive, but "null" is
     const patNull = /^(?:None|null|Null|NULL)$/;
-
     const patBooleanFalse = /^(?:false|False|FALSE)$/;
     const patBooleanTrue = /^(?:true|True|TRUE)$/;
-
     const patInteger = /^(?:(?:0)|(?:[-+]?[1-9]\d*))$/;
-
     const patFloat = /^(?:[-+]?(?:(?:\d+)|(?:\d+[.]\d*)|(?:\d*[.]\d+))(?:[eE][-+]?\d+)?)$/;
 
-    // just in case the user typed some extra whitespace
-    // at the start of the line
     pToRun = pToRun.trim();
 
     while (pToRun.length > 0) {
       let name = null;
-
       let firstSpaceChar = pToRun.indexOf(" ");
       if (firstSpaceChar < 0) {
         firstSpaceChar = pToRun.length;
       }
       const firstEqualSign = pToRun.indexOf("=");
       if (firstEqualSign >= 0 && firstEqualSign < firstSpaceChar) {
-        // we have the name of a named parameter
         name = pToRun.substring(0, firstEqualSign);
         pToRun = pToRun.substring(firstEqualSign + 1);
         if (pToRun === "" || pToRun[0] === " ") {
@@ -70,8 +60,6 @@ export class ParseCommandLine {
         return "Must fill in all placeholders, e.g. " + placeHolder;
       }
 
-      // Determine whether the JSON string starts with a known
-      // character for a JSON type
       let beginChar;
       let endChar;
       let objType;
@@ -83,67 +71,29 @@ export class ParseCommandLine {
         beginChar = "[";
         endChar = "]";
         objType = "array";
-      } else if (pToRun.startsWith("\"\"\"")) {
-        beginChar = "\"\"\"";
-        endChar = "\"\"\"";
+      } else if (pToRun.startsWith('"""')) {
+        beginChar = '"""';
+        endChar = '"""';
         objType = "triple-quoted-string";
-      } else if (pToRun[0] === "\"") {
-        // note that json does not support single-quoted strings
-        beginChar = "\"";
-        endChar = "\"";
+      } else if (pToRun[0] === '"') {
+        beginChar = '"';
+        endChar = '"';
         objType = "double-quoted-string";
       }
 
       let value;
-      if (endChar && objType) {
-        // The string starts with a character for a known JSON type
-        let charPos = beginChar.length;
-        for (;;) {
-          // Try until the next closing character
-          let endCharPos = pToRun.indexOf(endChar, charPos);
-          if (endCharPos < 0) {
-            return "No valid " + objType + " found";
-          }
-
-          // parse what we have found so far
-          // the string ends with a closing character
-          // but that may not be enough, e.g. "{a:{}"
-          try {
-            if (objType === "triple-quoted-string") {
-              value = pToRun.substring(beginChar.length, endCharPos);
-            } else {
-              const fndStr = pToRun.substring(0, endCharPos + endChar.length);
-              value = JSON.parse(fndStr);
-            }
-          } catch (err) { // eslint-disable-line no-unused-vars
-            // the string that we tried to parse is not valid json
-            // continue to add more text from the input
-            charPos = endCharPos + 1;
-            continue;
-          }
-
-          // the first part of the string is valid JSON
-          endCharPos += endChar.length;
-          if (endCharPos < pToRun.length && pToRun[endCharPos] !== " ") {
-            return "Valid " + objType + ", but followed by text:" + pToRun.substring(endCharPos) + Character.HORIZONTAL_ELLIPSIS;
-          }
-
-          // valid JSON and not followed by strange characters
-          pToRun = pToRun.substring(endCharPos);
-          break;
-        }
+      if (objType) {
+        const result = ParseCommandLine._getComplexToken(pToRun, beginChar, endChar, objType);
+        if (result.error) {return result.error;}
+        value = result.value;
+        pToRun = result.pToRun;
       } else {
-        // everything else is a string (without quotes)
-        // when we are done, we'll see whether it actually is a number
-        // or any of the known constants
         let str = "";
         while (pToRun.length > 0 && pToRun[0] !== " ") {
           str += pToRun[0];
           pToRun = pToRun.substring(1);
         }
 
-        // try to find whether the string is actually a known constant
-        // or integer or float
         if (patNull.test(str)) {
           value = null;
         } else if (patBooleanFalse.test(str)) {
@@ -151,7 +101,6 @@ export class ParseCommandLine {
         } else if (patBooleanTrue.test(str)) {
           value = true;
         } else if (ParseCommandLine.getPatJid().test(str)) {
-          // jobIds look like numbers but must be strings
           value = str;
         } else if (patInteger.test(str)) {
           value = parseInt(str, 10);
@@ -166,21 +115,45 @@ export class ParseCommandLine {
       }
 
       if (name === null) {
-        // anonymous parameter
         pArgsArray.push(value);
       } else if (name in pArgsObject) {
-        // named parameter which already exists
         return "Duplicate named variable '" + name + "'";
       } else {
-        // named parameter
         pArgsObject[name] = value;
       }
 
-      // ignore the whitespace before the next part
       pToRun = pToRun.trim();
     }
 
-    // succesfull (no error message return)
     return null;
+  }
+
+  static _getComplexToken (pToRun, beginChar, endChar, objType) {
+    let charPos = beginChar.length;
+    for (;;) {
+      let endCharPos = pToRun.indexOf(endChar, charPos);
+      if (endCharPos < 0) {
+        return { error: "No valid " + objType + " found" };
+      }
+
+      try {
+        let value;
+        if (objType === "triple-quoted-string") {
+          value = pToRun.substring(beginChar.length, endCharPos);
+        } else {
+          const fndStr = pToRun.substring(0, endCharPos + endChar.length);
+          value = JSON.parse(fndStr);
+        }
+
+        endCharPos += endChar.length;
+        if (endCharPos < pToRun.length && pToRun[endCharPos] !== " ") {
+          return { error: "Valid " + objType + ", but followed by text:" + pToRun.substring(endCharPos) + Character.HORIZONTAL_ELLIPSIS };
+        }
+
+        return { pToRun: pToRun.substring(endCharPos), value };
+      } catch (err) { // eslint-disable-line no-unused-vars
+        charPos = endCharPos + 1;
+      }
+    }
   }
 }

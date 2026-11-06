@@ -1,13 +1,12 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {DropDownMenu} from "../DropDown.js";
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class GrainsMinionPanel extends Panel {
-
   constructor () {
     super("grains-minion");
 
@@ -32,18 +31,35 @@ export class GrainsMinionPanel extends Panel {
 
     this.updateTitle("Grains on " + minionId);
 
-    const useCacheGrains = Utils.getStorageItemBoolean("session", "use_cache_for_grains", false);
-    this.setWarningText("info", useCacheGrains ? "the content of this screen is based on cached grains info, minion status or grain info may not be accurate" : "");
+    const useCacheGrains = Utils.getStorageItemBoolean(
+      "session",
+      "use_cache_for_grains",
+      false,
+    );
+    this.setWarningText(
+      "info",
+      useCacheGrains
+        ? "the content of this screen is based on cached grains info, minion status or grain info may not be accurate"
+        : "",
+    );
 
-    const localGrainsItemsPromise = useCacheGrains ? this.api.getRunnerCacheGrains(minionId) : this.api.getLocalGrainsItems(minionId);
+    const localGrainsItemsPromise = useCacheGrains
+      ? this.api.getRunnerCacheGrains(minionId)
+      : this.api.getLocalGrainsItems(minionId);
 
-    localGrainsItemsPromise.then((pLocalGrainsItemsData) => {
-      this._handleLocalGrainsItems(pLocalGrainsItemsData, minionId);
-      return true;
-    }, (pLocalGrainsItemsMsg) => {
-      this._handleLocalGrainsItems(JSON.stringify(pLocalGrainsItemsMsg), minionId);
-      return false;
-    });
+    localGrainsItemsPromise.then(
+      (pLocalGrainsItemsData) => {
+        this._handleLocalGrainsItems(pLocalGrainsItemsData, minionId);
+        return true;
+      },
+      (pLocalGrainsItemsMsg) => {
+        this._handleLocalGrainsItems(
+          JSON.stringify(pLocalGrainsItemsMsg),
+          minionId,
+        );
+        return false;
+      },
+    );
   }
 
   _handleLocalGrainsItems (pLocalGrainsItemsData, pMinionId) {
@@ -76,10 +92,30 @@ export class GrainsMinionPanel extends Panel {
 
       const grainValue = Output.formatObject(grains[grainName]);
 
-      this._addMenuItemGrainsSetValUpdate(grainMenu, pMinionId, grainName, grains);
-      this._addMenuItemGrainsAppendWhenNeeded(grainMenu, pMinionId, grainName, grainValue);
-      this._addMenuItemGrainsDelKey(grainMenu, pMinionId, grainName, grains[grainName]);
-      this._addMenuItemGrainsDelVal(grainMenu, pMinionId, grainName, grains[grainName]);
+      this._addMenuItemGrainsSetValUpdate(
+        grainMenu,
+        pMinionId,
+        grainName,
+        grains,
+      );
+      this._addMenuItemGrainsAppendWhenNeeded(
+        grainMenu,
+        pMinionId,
+        grainName,
+        grainValue,
+      );
+      this._addMenuItemGrainsDelKey(
+        grainMenu,
+        pMinionId,
+        grainName,
+        grains[grainName],
+      );
+      this._addMenuItemGrainsDelVal(
+        grainMenu,
+        pMinionId,
+        grainName,
+        grains[grainName],
+      );
 
       // menu comes before this data on purpose
       const grainValueTd = Utils.createTd("grain-value", grainValue);
@@ -95,8 +131,12 @@ export class GrainsMinionPanel extends Panel {
       });
     }
 
-    const txt = Utils.txtZeroOneMany(grainNames.length,
-      "No grains", "{0} grain", "{0} grains");
+    const txt = Utils.txtZeroOneMany(
+      grainNames.length,
+      "No grains",
+      "{0} grain",
+      "{0} grains",
+    );
     this.setMsg(txt);
   }
 

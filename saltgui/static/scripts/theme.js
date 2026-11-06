@@ -1,7 +1,9 @@
 (function initializeTheme () {
   const context = globalThis;
   const root = document.documentElement;
-  const mediaQuery = context.matchMedia ? context.matchMedia("(prefers-color-scheme: dark)") : null;
+  const mediaQuery = context.matchMedia
+    ? context.matchMedia("(prefers-color-scheme: dark)")
+    : null;
 
   function reportIgnoredError (message, error) {
     if (context.console && typeof context.console.debug === "function") {
@@ -33,7 +35,9 @@
       parentDoc.documentElement.getAttribute("theme") || "",
       parentDoc.documentElement.className || "",
       parentDoc.body ? parentDoc.body.className : "",
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
   }
 
   function parseColor (value) {
@@ -50,14 +54,23 @@
       return null;
     }
 
-    let channelParts = rgbMatch[1].split(",").map((channel) => channel.trim()).filter((channel) => channel !== "");
+    let channelParts = rgbMatch[1]
+      .split(",")
+      .map((channel) => channel.trim())
+      .filter((channel) => channel !== "");
     if (channelParts.length === 1) {
       // Legacy fallback for plain space-separated rgb without commas.
-      channelParts = channelParts[0].split(" ").map((channel) => channel.trim()).filter((channel) => channel !== "");
+      channelParts = channelParts[0]
+        .split(" ")
+        .map((channel) => channel.trim())
+        .filter((channel) => channel !== "");
     }
 
     const channels = channelParts.map((channel) => Number.parseFloat(channel));
-    if (channels.length < 3 || channels.slice(0, 3).some((channel) => Number.isNaN(channel))) {
+    if (
+      channels.length < 3 ||
+      channels.slice(0, 3).some((channel) => Number.isNaN(channel))
+    ) {
       return null;
     }
 
@@ -87,9 +100,13 @@
     }
 
     try {
-      const candidates = [context.getComputedStyle(parentDoc.documentElement).backgroundColor];
+      const candidates = [
+        context.getComputedStyle(parentDoc.documentElement).backgroundColor,
+      ];
       if (parentDoc.body) {
-        candidates.push(context.getComputedStyle(parentDoc.body).backgroundColor);
+        candidates.push(
+          context.getComputedStyle(parentDoc.body).backgroundColor,
+        );
       }
 
       for (const candidate of candidates) {

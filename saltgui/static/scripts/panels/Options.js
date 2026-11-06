@@ -1,15 +1,14 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {LoginPanel} from "../panels/Login.js";
-import {Output} from "../output/Output.js";
-import {OutputYaml} from "../output/OutputYaml.js";
-import {Panel} from "./Panel.js";
-import {Router} from "../Router.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { LoginPanel } from "../panels/Login.js";
+import { Output } from "../output/Output.js";
+import { OutputYaml } from "../output/OutputYaml.js";
+import { Panel } from "./Panel.js";
+import { Router } from "../Router.js";
+import { Utils } from "../Utils.js";
 
 export class OptionsPanel extends Panel {
-
   constructor () {
     super("options");
 
@@ -19,10 +18,14 @@ export class OptionsPanel extends Panel {
       "Names 'session_*' show the values from the login session.",
       "Names 'saltgui_*' show the values from the master file '/etc/salt/master'.",
       "Other names are regular variables from the master file.",
-      "Changes made in this screen are valid for this session ONLY."
+      "Changes made in this screen are valid for this session ONLY.",
     ]);
 
-    const txt = Utils.createDiv("", Character.CIRCLED_INFORMATION_SOURCE + " Any changes made here are for this login session only");
+    const txt = Utils.createDiv(
+      "",
+      Character.CIRCLED_INFORMATION_SOURCE +
+        " Any changes made here are for this login session only",
+    );
     this.div.append(txt);
 
     this.addTable(["Name", "Value"]);
@@ -37,37 +40,58 @@ export class OptionsPanel extends Panel {
       ["perms", "session"],
       ["nodegroups", null, "(none)"],
       [
-        "state-compress-ids", null, "false",
-        [["compress-ids", "true", "false"]]
+        "state-compress-ids",
+        null,
+        "false",
+        [["compress-ids", "true", "false"]],
       ],
       [
-        "state-output", null, "full",
-        [["output", "full", "terse", "mixed", "changes", "full_id", "terse_id", "mixed_id", "changes_id"]]
+        "state-output",
+        null,
+        "full",
+        [
+          [
+            "output",
+            "full",
+            "terse",
+            "mixed",
+            "changes",
+            "full_id",
+            "terse_id",
+            "mixed_id",
+            "changes_id",
+          ],
+        ],
+      ],
+      ["state-output-pct", null, "false", [["output-pct", "true", "false"]]],
+      ["state-verbose", null, "true", [["verbose", "true", "false"]]],
+      [
+        "datetime-fraction-digits",
+        "saltgui",
+        "6",
+        [["digits", "0", "1", "2", "3", "4", "5", "6"]],
       ],
       [
-        "state-output-pct", null, "false",
-        [["output-pct", "true", "false"]]
+        "skip-wheel-minions-connected",
+        null,
+        "false",
+        [["skip", "true", "false"]],
       ],
       [
-        "state-verbose", null, "true",
-        [["verbose", "true", "false"]]
+        "datetime-representation",
+        "saltgui",
+        "utc",
+        [
+          [
+            "representation",
+            "utc",
+            "local",
+            "utc-localtime:utc+localtime",
+            "local-utctime:local+utctime",
+          ],
+        ],
       ],
-      [
-        "datetime-fraction-digits", "saltgui", "6",
-        [["digits", "0", "1", "2", "3", "4", "5", "6"]]
-      ],
-      [
-        "skip-wheel-minions-connected", null, "false",
-        [["skip", "true", "false"]]
-      ],
-      [
-        "datetime-representation", "saltgui", "utc",
-        [["representation", "utc", "local", "utc-localtime:utc+localtime", "local-utctime:local+utctime"]]
-      ],
-      [
-        "full-return", "saltgui", "false",
-        [["full-return", "true", "false"]]
-      ],
+      ["full-return", "saltgui", "false", [["full-return", "true", "false"]]],
 
       /* note that this is not in the alphabetic order */
       ["show-jobs", "saltgui", "(all)"],
@@ -86,31 +110,39 @@ export class OptionsPanel extends Panel {
       ["motd-txt", "saltgui", "(none)"],
       ["motd-html", "saltgui", "(none)"],
       [
-        "output-formats", "saltgui", "doc,saltguihighstate,json",
+        "output-formats",
+        "saltgui",
+        "doc,saltguihighstate,json",
         [
           ["doc", "doc", "none:no doc"],
-          ["highstate", "saltguihighstate:SaltGUI highstate", "highstate:Normal highstate", "none:No highstate"],
-          ["output", "json", "nested", "yaml"]
-        ]
+          [
+            "highstate",
+            "saltguihighstate:SaltGUI highstate",
+            "highstate:Normal highstate",
+            "none:No highstate",
+          ],
+          ["output", "json", "nested", "yaml"],
+        ],
       ],
       ["preview-grains", "saltgui", "(none)"],
       ["public-pillars", "saltgui", "(none)"],
       [
-        "use-cache-for-grains", "saltgui", "false",
-        [["grains", "true", "false"]]
+        "use-cache-for-grains",
+        "saltgui",
+        "false",
+        [["grains", "true", "false"]],
       ],
       [
-        "use-cache-for-pillar", "saltgui", "false",
-        [["pillar", "true", "false"]]
+        "use-cache-for-pillar",
+        "saltgui",
+        "false",
+        [["pillar", "true", "false"]],
       ],
       ["templates", "saltgui", "(none)"],
-      [
-        "tooltip-mode", "saltgui", "full",
-        [["mode", "full", "simple", "none"]]
-      ],
+      ["tooltip-mode", "saltgui", "full", [["mode", "full", "simple", "none"]]],
 
       /* last because it might be very long */
-      ["custom-command-help", "saltgui", "(none)"]
+      ["custom-command-help", "saltgui", "(none)"],
     ];
   }
 
@@ -119,8 +151,13 @@ export class OptionsPanel extends Panel {
     tr.id = "option-" + pName;
     tr.dataset.defaultValue = pDefaultValue;
 
-    const labelTxt = (pCategory ? pCategory + "_" : "") + pName.replace(/-/g, "_");
-    const tdName = Utils.createTd("", labelTxt + ":", "option-" + pName + "-name");
+    const labelTxt =
+      (pCategory ? pCategory + "_" : "") + pName.replace(/-/g, "_");
+    const tdName = Utils.createTd(
+      "",
+      labelTxt + ":",
+      "option-" + pName + "-name",
+    );
     tdName.style.whiteSpace = "normal";
     tr.appendChild(tdName);
 
@@ -243,7 +280,6 @@ export class OptionsPanel extends Panel {
   }
 
   static _enhanceSessionExpire (pTd, pSessionExpire, pSessionStart) {
-
     const line1 = Utils.createDiv(null, pSessionExpire);
 
     const line2s = Utils.createSpan();
@@ -296,7 +332,10 @@ export class OptionsPanel extends Panel {
       this._addOptionRow(name, category, defaultValue, valuesArr);
     }
 
-    const loginResponse = Utils.getStorageItemObject("session", "login_response");
+    const loginResponse = Utils.getStorageItemObject(
+      "session",
+      "login_response",
+    );
     const sessionStart = loginResponse.start;
 
     for (const option of this.options) {
@@ -393,7 +432,12 @@ export class OptionsPanel extends Panel {
     if (valueStr === undefined) {
       const tr = this.div.querySelector("#option-" + id);
       if (tr.dataset.defaultValue) {
-        return "(undefined) " + Character.RIGHTWARDS_ARROW + " " + tr.dataset.defaultValue;
+        return (
+          "(undefined) " +
+          Character.RIGHTWARDS_ARROW +
+          " " +
+          tr.dataset.defaultValue
+        );
       }
       return "(undefined)";
     }
@@ -407,13 +451,14 @@ export class OptionsPanel extends Panel {
     try {
       value = JSON.parse(valueStr);
     } catch (err) {
-      value = err + " in \"" + valueStr + "\"";
+      value = err + ' in "' + valueStr + '"';
     }
     return OutputYaml.formatYAML(value);
   }
 
   _isSelected (pCategory, pRow, pName) {
-    const radioButtonId = "option-" + pCategory + "-value-" + pRow + "-" + pName;
+    const radioButtonId =
+      "option-" + pCategory + "-value-" + pRow + "-" + pName;
     const radioButton = this.div.querySelector("#" + radioButtonId);
     return radioButton.checked;
   }
@@ -424,7 +469,9 @@ export class OptionsPanel extends Panel {
     if (this._isSelected("state-verbose", "verbose", "false")) value = "false";
     if (this._isSelected("state-verbose", "verbose", "true")) value = "true";
     /* eslint-enable curly */
-    const stateVerboseTd = this.div.querySelector("#option-state-verbose-value");
+    const stateVerboseTd = this.div.querySelector(
+      "#option-state-verbose-value",
+    );
     stateVerboseTd.innerText = value;
     Utils.setStorageItem("session", "state_verbose", value);
   }
@@ -432,10 +479,14 @@ export class OptionsPanel extends Panel {
   _newStateCompressIds () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("state-compress-ids", "compress-ids", "false")) value = "false";
-    if (this._isSelected("state-compress-ids", "compress-ids", "true")) value = "true";
+    if (this._isSelected("state-compress-ids", "compress-ids", "false"))
+      value = "false";
+    if (this._isSelected("state-compress-ids", "compress-ids", "true"))
+      value = "true";
     /* eslint-enable curly */
-    const stateCompressIdsTd = this.div.querySelector("#option-state-compress-ids-value");
+    const stateCompressIdsTd = this.div.querySelector(
+      "#option-state-compress-ids-value",
+    );
     stateCompressIdsTd.innerText = value;
     Utils.setStorageItem("session", "state_compress_ids", value);
   }
@@ -446,11 +497,16 @@ export class OptionsPanel extends Panel {
     if (this._isSelected("state-output", "output", "full")) value = "full";
     if (this._isSelected("state-output", "output", "terse")) value = "terse";
     if (this._isSelected("state-output", "output", "mixed")) value = "mixed";
-    if (this._isSelected("state-output", "output", "changes")) value = "changes";
-    if (this._isSelected("state-output", "output", "full_id")) value = "full_id";
-    if (this._isSelected("state-output", "output", "terse_id")) value = "terse_id";
-    if (this._isSelected("state-output", "output", "mixed_id")) value = "mixed_id";
-    if (this._isSelected("state-output", "output", "changes_id")) value = "changes_id";
+    if (this._isSelected("state-output", "output", "changes"))
+      value = "changes";
+    if (this._isSelected("state-output", "output", "full_id"))
+      value = "full_id";
+    if (this._isSelected("state-output", "output", "terse_id"))
+      value = "terse_id";
+    if (this._isSelected("state-output", "output", "mixed_id"))
+      value = "mixed_id";
+    if (this._isSelected("state-output", "output", "changes_id"))
+      value = "changes_id";
     /* eslint-enable curly */
     const stateOutputeTd = this.div.querySelector("#option-state-output-value");
     stateOutputeTd.innerText = value;
@@ -460,10 +516,14 @@ export class OptionsPanel extends Panel {
   _newStateOutputPct () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("state-output-pct", "output-pct", "false")) value = "false";
-    if (this._isSelected("state-output-pct", "output-pct", "true")) value = "true";
+    if (this._isSelected("state-output-pct", "output-pct", "false"))
+      value = "false";
+    if (this._isSelected("state-output-pct", "output-pct", "true"))
+      value = "true";
     /* eslint-enable curly */
-    const stateOutputPcteTd = this.div.querySelector("#option-state-output-pct-value");
+    const stateOutputPcteTd = this.div.querySelector(
+      "#option-state-output-pct-value",
+    );
     stateOutputPcteTd.innerText = value;
     Utils.setStorageItem("session", "state_output_pct", value);
   }
@@ -472,14 +532,19 @@ export class OptionsPanel extends Panel {
     let value = "";
     /* eslint-disable curly */
     if (this._isSelected("output-formats", "doc", "doc")) value += ",doc";
-    if (this._isSelected("output-formats", "highstate", "saltguihighstate")) value += ",saltguihighstate";
-    if (this._isSelected("output-formats", "highstate", "highstate")) value += ",highstate";
+    if (this._isSelected("output-formats", "highstate", "saltguihighstate"))
+      value += ",saltguihighstate";
+    if (this._isSelected("output-formats", "highstate", "highstate"))
+      value += ",highstate";
     if (this._isSelected("output-formats", "output", "json")) value += ",json";
-    if (this._isSelected("output-formats", "output", "nested")) value += ",nested";
+    if (this._isSelected("output-formats", "output", "nested"))
+      value += ",nested";
     if (this._isSelected("output-formats", "output", "yaml")) value += ",yaml";
     value = value.replace(/^,/, "");
     /* eslint-enable curly */
-    const outputFormatsTd = this.div.querySelector("#option-output-formats-value");
+    const outputFormatsTd = this.div.querySelector(
+      "#option-output-formats-value",
+    );
     outputFormatsTd.innerText = value;
     Utils.setStorageItem("session", "output_formats", value);
     // refresh the right-hand panel based on the new option value
@@ -490,11 +555,15 @@ export class OptionsPanel extends Panel {
   _newUseCacheForGrains () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("use-cache-for-grains", "grains", "false")) value = "false";
-    if (this._isSelected("use-cache-for-grains", "grains", "true")) value = "true";
+    if (this._isSelected("use-cache-for-grains", "grains", "false"))
+      value = "false";
+    if (this._isSelected("use-cache-for-grains", "grains", "true"))
+      value = "true";
     value = value.replace(/^,/, "");
     /* eslint-enable curly */
-    const useCacheForGrainsTd = this.div.querySelector("#option-use-cache-for-grains-value");
+    const useCacheForGrainsTd = this.div.querySelector(
+      "#option-use-cache-for-grains-value",
+    );
     useCacheForGrainsTd.innerText = value || "(none)";
     Utils.setStorageItem("session", "use_cache_for_grains", value);
   }
@@ -502,11 +571,15 @@ export class OptionsPanel extends Panel {
   _newUseCacheForPillar () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("use-cache-for-pillar", "pillar", "false")) value = "false";
-    if (this._isSelected("use-cache-for-pillar", "pillar", "true")) value = "true";
+    if (this._isSelected("use-cache-for-pillar", "pillar", "false"))
+      value = "false";
+    if (this._isSelected("use-cache-for-pillar", "pillar", "true"))
+      value = "true";
     value = value.replace(/^,/, "");
     /* eslint-enable curly */
-    const useCacheForPillarTd = this.div.querySelector("#option-use-cache-for-pillar-value");
+    const useCacheForPillarTd = this.div.querySelector(
+      "#option-use-cache-for-pillar-value",
+    );
     useCacheForPillarTd.innerText = value || "(none)";
     Utils.setStorageItem("session", "use_cache_for_pillar", value);
   }
@@ -514,15 +587,24 @@ export class OptionsPanel extends Panel {
   _newDatetimeFractionDigits () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("datetime-fraction-digits", "digits", "0")) value = "0";
-    if (this._isSelected("datetime-fraction-digits", "digits", "1")) value = "1";
-    if (this._isSelected("datetime-fraction-digits", "digits", "2")) value = "2";
-    if (this._isSelected("datetime-fraction-digits", "digits", "3")) value = "3";
-    if (this._isSelected("datetime-fraction-digits", "digits", "4")) value = "4";
-    if (this._isSelected("datetime-fraction-digits", "digits", "5")) value = "5";
-    if (this._isSelected("datetime-fraction-digits", "digits", "6")) value = "6";
+    if (this._isSelected("datetime-fraction-digits", "digits", "0"))
+      value = "0";
+    if (this._isSelected("datetime-fraction-digits", "digits", "1"))
+      value = "1";
+    if (this._isSelected("datetime-fraction-digits", "digits", "2"))
+      value = "2";
+    if (this._isSelected("datetime-fraction-digits", "digits", "3"))
+      value = "3";
+    if (this._isSelected("datetime-fraction-digits", "digits", "4"))
+      value = "4";
+    if (this._isSelected("datetime-fraction-digits", "digits", "5"))
+      value = "5";
+    if (this._isSelected("datetime-fraction-digits", "digits", "6"))
+      value = "6";
     /* eslint-enable curly */
-    const datetimeFractionDigitsTd = this.div.querySelector("#option-datetime-fraction-digits-value");
+    const datetimeFractionDigitsTd = this.div.querySelector(
+      "#option-datetime-fraction-digits-value",
+    );
     datetimeFractionDigitsTd.innerText = value;
     Utils.setStorageItem("session", "datetime_fraction_digits", value);
   }
@@ -530,11 +612,15 @@ export class OptionsPanel extends Panel {
   _newSkipWheelMinionsConnected () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("skip-wheel-minions-connected", "skip", "false")) value = "false";
-    if (this._isSelected("skip-wheel-minions-connected", "skip", "true")) value = "true";
+    if (this._isSelected("skip-wheel-minions-connected", "skip", "false"))
+      value = "false";
+    if (this._isSelected("skip-wheel-minions-connected", "skip", "true"))
+      value = "true";
     value = value.replace(/^,/, "");
     /* eslint-enable curly */
-    const skipWheelMinionsConnectedTd = this.div.querySelector("#option-skip-wheel-minions-connected-value");
+    const skipWheelMinionsConnectedTd = this.div.querySelector(
+      "#option-skip-wheel-minions-connected-value",
+    );
     skipWheelMinionsConnectedTd.innerText = value || "(none)";
     Utils.setStorageItem("session", "skip_wheel_minions_connected", value);
   }
@@ -542,12 +628,30 @@ export class OptionsPanel extends Panel {
   _newDatetimeRepresentation () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("datetime-representation", "representation", "utc")) value = "utc";
-    if (this._isSelected("datetime-representation", "representation", "local")) value = "local";
-    if (this._isSelected("datetime-representation", "representation", "utc-localtime")) value = "utc-localtime";
-    if (this._isSelected("datetime-representation", "representation", "local-utctime")) value = "local-utctime";
+    if (this._isSelected("datetime-representation", "representation", "utc"))
+      value = "utc";
+    if (this._isSelected("datetime-representation", "representation", "local"))
+      value = "local";
+    if (
+      this._isSelected(
+        "datetime-representation",
+        "representation",
+        "utc-localtime",
+      )
+    )
+      value = "utc-localtime";
+    if (
+      this._isSelected(
+        "datetime-representation",
+        "representation",
+        "local-utctime",
+      )
+    )
+      value = "local-utctime";
     /* eslint-enable curly */
-    const datetimeRepresentationTd = this.div.querySelector("#option-datetime-representation-value");
+    const datetimeRepresentationTd = this.div.querySelector(
+      "#option-datetime-representation-value",
+    );
     datetimeRepresentationTd.innerText = value;
     Utils.setStorageItem("session", "datetime_representation", value);
   }
@@ -567,7 +671,8 @@ export class OptionsPanel extends Panel {
   _newFullReturn () {
     let value = "";
     /* eslint-disable curly */
-    if (this._isSelected("full-return", "full-return", "false")) value = "false";
+    if (this._isSelected("full-return", "full-return", "false"))
+      value = "false";
     if (this._isSelected("full-return", "full-return", "true")) value = "true";
     /* eslint-enable curly */
     const fullReturnTd = this.div.querySelector("#option-full-return-value");

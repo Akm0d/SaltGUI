@@ -1,10 +1,9 @@
 /* global */
 
-import {JobPanel} from "../panels/Job.js";
-import {Page} from "./Page.js";
+import { JobPanel } from "../panels/Job.js";
+import { Page } from "./Page.js";
 
 export class JobPage extends Page {
-
   constructor (pRouter) {
     super("job", "Job", "page-job", "button-jobs", pRouter);
 

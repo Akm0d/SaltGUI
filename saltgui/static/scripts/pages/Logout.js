@@ -1,10 +1,9 @@
 /* global */
 
-import {Page} from "./Page.js";
-import {Utils} from "../Utils.js";
+import { Page } from "./Page.js";
+import { Utils } from "../Utils.js";
 
 export class LogoutPage extends Page {
-
   constructor (pRouter) {
     super("logout", "Logout", "page-logout", "", pRouter);
   }
@@ -27,7 +26,7 @@ export class LogoutPage extends Page {
     Utils.hideAllMenus(true);
 
     this.api.logout().then(() => {
-      this.router.goTo("login", {"reason": "logout"});
+      this.router.goTo("login", { reason: "logout" });
     });
   }
 
@@ -45,23 +44,26 @@ export class LogoutPage extends Page {
     const statsPromise = this.api.getStats();
     // don't act in the callbacks
     // Api.apiRequest will do all the work
-    statsPromise.then(() => true, (pHttpResponse) => {
-      if (pHttpResponse.status === 500) {
-        // assume this error applies only to /stats and
-        // not to any regular api functions
-        // may happen due to https://github.com/saltstack/salt/issues/59620
-        // repeating this is not so useful
-        if (this.logoutInterval) {
-          clearInterval(this.logoutInterval);
-          this.logoutInterval = null;
+    statsPromise.then(
+      () => true,
+      (pHttpResponse) => {
+        if (pHttpResponse.status === 500) {
+          // assume this error applies only to /stats and
+          // not to any regular api functions
+          // may happen due to https://github.com/saltstack/salt/issues/59620
+          // repeating this is not so useful
+          if (this.logoutInterval) {
+            clearInterval(this.logoutInterval);
+            this.logoutInterval = null;
+          }
+          return;
         }
-        return;
-      }
-      this.api.logout().then(() => {
-        this.router.goTo("login", {"reason": "session-cancelled"});
-        return false;
-      });
-    });
+        this.api.logout().then(() => {
+          this.router.goTo("login", { reason: "session-cancelled" });
+          return false;
+        });
+      },
+    );
   }
 
   _updateSessionTimeoutWarning () {
@@ -74,7 +76,10 @@ export class LogoutPage extends Page {
       return;
     }
 
-    const loginResponse = Utils.getStorageItemObject("session", "login_response");
+    const loginResponse = Utils.getStorageItemObject(
+      "session",
+      "login_response",
+    );
 
     const expireValue = loginResponse.expire;
     if (!expireValue) {
@@ -88,13 +93,16 @@ export class LogoutPage extends Page {
       warning.style.display = "";
       warning.innerText = "Logout";
       // logout, and redirect to login screen
-      this.api.logout().then(() => {
-        this.router.goTo("login", {"reason": "session-expired"});
-        return true;
-      }, () => {
-        this.router.goTo("login", {"reason": "session-expired"});
-        return false;
-      });
+      this.api.logout().then(
+        () => {
+          this.router.goTo("login", { reason: "session-expired" });
+          return true;
+        },
+        () => {
+          this.router.goTo("login", { reason: "session-expired" });
+          return false;
+        },
+      );
       return;
     }
 

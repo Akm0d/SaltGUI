@@ -1,12 +1,11 @@
 /* global */
 
-import {OptionsPanel} from "../panels/Options.js";
-import {Page} from "./Page.js";
-import {StatsPanel} from "../panels/Stats.js";
-import {Utils} from "../Utils.js";
+import { OptionsPanel } from "../panels/Options.js";
+import { Page } from "./Page.js";
+import { StatsPanel } from "../panels/Stats.js";
+import { Utils } from "../Utils.js";
 
 export class OptionsPage extends Page {
-
   constructor (pRouter) {
     super("options", "Options", "page-options", "", pRouter);
 

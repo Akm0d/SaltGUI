@@ -84,12 +84,19 @@ export class Hilitor {
       }
     }
 
-    if (node.nodeType === 3) { // NODE_TEXT
+    if (node.nodeType === 3) {
+      // NODE_TEXT
       let nv, regs;
-      if (this.#nrHilites <= 25 && (nv = node.nodeValue) && (regs = this.#matchRegExp.exec(nv)) && regs[0].length > 0) {
+      if (
+        this.#nrHilites <= 25 &&
+        (nv = node.nodeValue) &&
+        (regs = this.#matchRegExp.exec(nv)) &&
+        regs[0].length > 0
+      ) {
         const found = isCaseSensitive ? regs[0] : regs[0].toLowerCase();
         if (!this.#wordColor[found]) {
-          this.#wordColor[found] = this.#colors[this.#colorIdx++ % this.#colors.length];
+          this.#wordColor[found] =
+            this.#colors[this.#colorIdx++ % this.#colors.length];
         }
 
         const match = document.createElement(this.#hiliteTag);
@@ -126,6 +133,6 @@ export class Hilitor {
   }
 }
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.Hilitor = Hilitor;
 }

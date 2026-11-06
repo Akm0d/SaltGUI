@@ -1,12 +1,12 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {DropDownMenu} from "../DropDown.js";
-import {JobPanel} from "./Job.js";
-import {JobsPanel} from "./Jobs.js";
-import {Output} from "../output/Output.js";
-import {TargetType} from "../TargetType.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { DropDownMenu } from "../DropDown.js";
+import { JobPanel } from "./Job.js";
+import { JobsPanel } from "./Jobs.js";
+import { Output } from "../output/Output.js";
+import { TargetType } from "../TargetType.js";
+import { Utils } from "../Utils.js";
 
 // for now these are static
 // changing these will affect the server load while loading this page
@@ -22,7 +22,6 @@ const LOADING_INTERVAL_IN_MS = 1000;
 const MAX_JOBS_DETAILS = 50;
 
 export class JobsDetailsPanel extends JobsPanel {
-
   constructor () {
     super("jobs");
 
@@ -36,9 +35,20 @@ export class JobsDetailsPanel extends JobsPanel {
     this.addHelpButton([
       "Entries for jobs that are primarily used by SaltGUI are normally hidden.",
       "It is possible to define exceptions on that, and also to define additions to that.",
-      "See README.md for more details."
+      "See README.md for more details.",
     ]);
-    this.addTable(["-menu-", "JID", "Target", "Function", "Start Time", "Status", "Details"], "data-list-jobs");
+    this.addTable(
+      [
+        "-menu-",
+        "JID",
+        "Target",
+        "Function",
+        "Start Time",
+        "Status",
+        "Details",
+      ],
+      "data-list-jobs",
+    );
     this.setTableSortable("JID", "desc");
     this.setTableClickable("page");
     this.addMsg();
@@ -47,7 +57,9 @@ export class JobsDetailsPanel extends JobsPanel {
   onShow () {
     const patInteger = /^(?:(?:0)|(?:[-+]?[1-9][0-9]*))$/;
 
-    let cnt = decodeURIComponent(Utils.getQueryParam("cnt", String(MAX_JOBS_DETAILS)));
+    let cnt = decodeURIComponent(
+      Utils.getQueryParam("cnt", String(MAX_JOBS_DETAILS)),
+    );
     if (cnt === "eligible") {
       cnt = 10000;
     } else if (cnt === "all") {
@@ -88,42 +100,51 @@ export class JobsDetailsPanel extends JobsPanel {
   }
 
   _addSettingsMenuItemShowSome () {
-    this.settingsMenu.addMenuItem(() => {
-      let title = "Show first " + MAX_JOBS_DETAILS + " jobs";
-      const cnt = decodeURIComponent(Utils.getQueryParam("cnt"));
-      if (cnt === "undefined" || cnt === String(MAX_JOBS_DETAILS)) {
-        title = Character.BLACK_CIRCLE + " " + title;
-      }
-      return title;
-    }, () => {
-      this.router.goTo("jobs", {"cnt": MAX_JOBS_DETAILS});
-    });
+    this.settingsMenu.addMenuItem(
+      () => {
+        let title = "Show first " + MAX_JOBS_DETAILS + " jobs";
+        const cnt = decodeURIComponent(Utils.getQueryParam("cnt"));
+        if (cnt === "undefined" || cnt === String(MAX_JOBS_DETAILS)) {
+          title = Character.BLACK_CIRCLE + " " + title;
+        }
+        return title;
+      },
+      () => {
+        this.router.goTo("jobs", { cnt: MAX_JOBS_DETAILS });
+      },
+    );
   }
 
   _addSettingsMenuItemShowEligible () {
-    this.settingsMenu.addMenuItem(() => {
-      const cnt = decodeURIComponent(Utils.getQueryParam("cnt"));
-      let title = "Show eligible jobs";
-      if (cnt === "eligible") {
-        title = Character.BLACK_CIRCLE + " " + title;
-      }
-      return title;
-    }, () => {
-      this.router.goTo("jobs", {"cnt": "eligible"});
-    });
+    this.settingsMenu.addMenuItem(
+      () => {
+        const cnt = decodeURIComponent(Utils.getQueryParam("cnt"));
+        let title = "Show eligible jobs";
+        if (cnt === "eligible") {
+          title = Character.BLACK_CIRCLE + " " + title;
+        }
+        return title;
+      },
+      () => {
+        this.router.goTo("jobs", { cnt: "eligible" });
+      },
+    );
   }
 
   _addSettingsMenuItemShowAll () {
-    this.settingsMenu.addMenuItem(() => {
-      const cnt = decodeURIComponent(Utils.getQueryParam("cnt"));
-      let title = "Show all jobs";
-      if (cnt === "all") {
-        title = Character.BLACK_CIRCLE + " " + title;
-      }
-      return title;
-    }, () => {
-      this.router.goTo("jobs", {"cnt": "all"});
-    });
+    this.settingsMenu.addMenuItem(
+      () => {
+        const cnt = decodeURIComponent(Utils.getQueryParam("cnt"));
+        let title = "Show all jobs";
+        if (cnt === "all") {
+          title = Character.BLACK_CIRCLE + " " + title;
+        }
+        return title;
+      },
+      () => {
+        this.router.goTo("jobs", { cnt: "all" });
+      },
+    );
   }
 
   static _isInsideViewPort (pElement) {
@@ -134,17 +155,20 @@ export class JobsDetailsPanel extends JobsPanel {
     if (rect.right < 0) {
       return false;
     }
-    if (rect.top >= (window.innerHeight || document.documentElement.clientHeight)) {
+    if (
+      rect.top >= (window.innerHeight || document.documentElement.clientHeight)
+    ) {
       return false;
     }
-    if (rect.left >= (window.innerWidth || document.documentElement.clientWidth)) {
+    if (
+      rect.left >= (window.innerWidth || document.documentElement.clientWidth)
+    ) {
       return false;
     }
     return true;
   }
 
   _updateNextJob () {
-
     // user can decide
     // system can decide to remove the play/pause button
     if (this.playOrPause !== "play") {
@@ -204,18 +228,23 @@ export class JobsDetailsPanel extends JobsPanel {
   _getJobDetails (pJobId) {
     const runnerJobsListJobPromise = this.api.getRunnerJobsListJob(pJobId);
 
-    runnerJobsListJobPromise.then((pRunnerJobsListJobData) => {
-      this._handleJobsRunnerJobsListJob(pJobId, pRunnerJobsListJobData);
-      return true;
-    }, (pRunnerJobsListJobMsg) => {
-      this.nrErrors += 1;
-      this._handleJobsRunnerJobsListJob(pJobId, JSON.stringify(pRunnerJobsListJobMsg));
-      return false;
-    });
+    runnerJobsListJobPromise.then(
+      (pRunnerJobsListJobData) => {
+        this._handleJobsRunnerJobsListJob(pJobId, pRunnerJobsListJobData);
+        return true;
+      },
+      (pRunnerJobsListJobMsg) => {
+        this.nrErrors += 1;
+        this._handleJobsRunnerJobsListJob(
+          pJobId,
+          JSON.stringify(pRunnerJobsListJobMsg),
+        );
+        return false;
+      },
+    );
   }
 
   _handleJobsRunnerJobsListJob (pJobId, pData) {
-
     const jobTr = this.table.querySelector("#" + Utils.getIdFromJobId(pJobId));
     if (!jobTr) {
       return;
@@ -232,7 +261,10 @@ export class JobsDetailsPanel extends JobsPanel {
     if (typeof pData !== "object") {
       if (pData === "skipped") {
         detailsSpan.innerText = "(skipped)";
-        Utils.addToolTip(detailsSpan, "skipped due to too many previous errors");
+        Utils.addToolTip(
+          detailsSpan,
+          "skipped due to too many previous errors",
+        );
       } else {
         detailsSpan.innerText = "(error)";
         Utils.addToolTip(detailsSpan, pData);
@@ -258,8 +290,12 @@ export class JobsDetailsPanel extends JobsPanel {
       pData.Minions = [];
     }
 
-    let detailsHTML = Utils.txtZeroOneMany(pData.Minions.length,
-      "no minions", "{0} minion", "{0} minions");
+    let detailsHTML = Utils.txtZeroOneMany(
+      pData.Minions.length,
+      "no minions",
+      "{0} minion",
+      "{0} minions",
+    );
 
     const keyCount = Object.keys(pData.Result).length;
     detailsHTML += ", ";
@@ -270,8 +306,12 @@ export class JobsDetailsPanel extends JobsPanel {
     } else {
       detailsHTML += "<span class='job-details-failure'>";
     }
-    detailsHTML += Utils.txtZeroOneMany(keyCount,
-      "no results", "{0} result", "{0} results");
+    detailsHTML += Utils.txtZeroOneMany(
+      keyCount,
+      "no results",
+      "{0} result",
+      "{0} results",
+    );
     detailsHTML += "</span>";
 
     if (keyCount < pData.Minions.length) {
@@ -300,17 +340,37 @@ export class JobsDetailsPanel extends JobsPanel {
       detailsHTML += ", ";
       if (key === "0-0") {
         detailsHTML += "<span class='job-details-success'>";
-        detailsHTML += Utils.txtZeroOneMany(summary[key], "", "{0} success", "{0} successes");
+        detailsHTML += Utils.txtZeroOneMany(
+          summary[key],
+          "",
+          "{0} success",
+          "{0} successes",
+        );
       } else if (key.startsWith("0-")) {
         detailsHTML += "<span class='job-details-warning'>";
-        detailsHTML += Utils.txtZeroOneMany(summary[key], "", "{0} success", "{0} successes");
+        detailsHTML += Utils.txtZeroOneMany(
+          summary[key],
+          "",
+          "{0} success",
+          "{0} successes",
+        );
       } else if (key.startsWith("1-")) {
         detailsHTML += "<span class='job-details-failure'>";
-        detailsHTML += Utils.txtZeroOneMany(summary[key], "", "{0} failure", "{0} failures");
+        detailsHTML += Utils.txtZeroOneMany(
+          summary[key],
+          "",
+          "{0} failure",
+          "{0} failures",
+        );
       } else {
         // if (key.startsWith("2-"))
         detailsHTML += "<span>";
-        detailsHTML += Utils.txtZeroOneMany(summary[key], "", "{0} unknown result", "{0} unknown results");
+        detailsHTML += Utils.txtZeroOneMany(
+          summary[key],
+          "",
+          "{0} unknown result",
+          "{0} unknown results",
+        );
       }
       if (key !== "0-0" && key !== "1-1" && key !== "2-unknown") {
         // don't show the retcode for expected combinations
@@ -354,7 +414,8 @@ export class JobsDetailsPanel extends JobsPanel {
     const maxTextLength = 50;
     if (targetText.length > maxTextLength) {
       // prevent column becoming too wide
-      targetText = targetText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
+      targetText =
+        targetText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
     }
     tr.appendChild(Utils.createTd("target", targetText));
 
@@ -362,7 +423,9 @@ export class JobsDetailsPanel extends JobsPanel {
     let functionText = job.Function + argumentsText;
     if (functionText.length > maxTextLength) {
       // prevent column becoming too wide
-      functionText = functionText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
+      functionText =
+        functionText.substring(0, maxTextLength) +
+        Character.HORIZONTAL_ELLIPSIS;
     }
     tr.appendChild(Utils.createTd("function", functionText));
 
@@ -376,7 +439,10 @@ export class JobsDetailsPanel extends JobsPanel {
     this._addMenuItemJobsRerunJob(menu, job, argumentsText);
 
     const statusTd = Utils.createTd();
-    const statusSpan = Utils.createSpan(["job-status", "no-job-status"], "loading" + Character.HORIZONTAL_ELLIPSIS);
+    const statusSpan = Utils.createSpan(
+      ["job-status", "no-job-status"],
+      "loading" + Character.HORIZONTAL_ELLIPSIS,
+    );
     statusSpan.addEventListener("click", (pClickEvent) => {
       // show "loading..." only once, but we are updating the whole column
       statusSpan.classList.add("no-job-status");
@@ -391,7 +457,10 @@ export class JobsDetailsPanel extends JobsPanel {
 
     tr.dataset.detailsUnknown = "true";
     const detailsTd = Utils.createTd("details");
-    const detailsSpan = Utils.createSpan(["details2", "no-job-details"], "(click)");
+    const detailsSpan = Utils.createSpan(
+      ["details2", "no-job-details"],
+      "(click)",
+    );
     detailsSpan.addEventListener("click", (pClickEvent) => {
       detailsSpan.classList.add("no-job-details");
       detailsSpan.innerText = "loading" + Character.HORIZONTAL_ELLIPSIS;
@@ -413,14 +482,14 @@ export class JobsDetailsPanel extends JobsPanel {
     tbody.appendChild(tr);
 
     tr.addEventListener("click", (pClickEvent) => {
-      this.router.goTo("job", {"id": job.id}, undefined, pClickEvent);
+      this.router.goTo("job", { id: job.id }, undefined, pClickEvent);
       pClickEvent.stopPropagation();
     });
   }
 
   _addJobsMenuItemShowDetails (pMenu, job) {
     pMenu.addMenuItem("Show details", (pClickEvent) => {
-      this.router.goTo("job", {"id": job.id}, undefined, pClickEvent);
+      this.router.goTo("job", { id: job.id }, undefined, pClickEvent);
     });
   }
 

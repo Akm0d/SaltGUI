@@ -1,10 +1,9 @@
 /* global */
 
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class PillarsPanel extends Panel {
-
   constructor () {
     super("pillars");
 
@@ -19,33 +18,57 @@ export class PillarsPanel extends Panel {
   }
 
   onShow () {
-    const useCachePillar = Utils.getStorageItemBoolean("session", "use_cache_for_pillar", false);
-    this.setWarningText("info", useCachePillar ? "the content of this screen is based on cached grains info, minion status or pillar info may not be accurate" : "");
+    const useCachePillar = Utils.getStorageItemBoolean(
+      "session",
+      "use_cache_for_pillar",
+      false,
+    );
+    this.setWarningText(
+      "info",
+      useCachePillar
+        ? "the content of this screen is based on cached grains info, minion status or pillar info may not be accurate"
+        : "",
+    );
 
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
-    const localPillarObfuscatePromise = useCachePillar ? this.api.getRunnerCachePillar(null) : this.api.getLocalPillarObfuscate(null);
+    const localPillarObfuscatePromise = useCachePillar
+      ? this.api.getRunnerCachePillar(null)
+      : this.api.getLocalPillarObfuscate(null);
 
-    const selectVisible = Utils.getStorageItemBoolean("session", "select_visible", false);
+    const selectVisible = Utils.getStorageItemBoolean(
+      "session",
+      "select_visible",
+      false,
+    );
     this.showSelectColumn(selectVisible);
 
     this.nrMinions = 0;
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      this._handlePillarsWheelKeyListAll(pWheelKeyListAllData);
-      localPillarObfuscatePromise.then((pLocalPillarObfuscateData) => {
-        this.updateMinions(pLocalPillarObfuscateData);
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        this._handlePillarsWheelKeyListAll(pWheelKeyListAllData);
+        localPillarObfuscatePromise.then(
+          (pLocalPillarObfuscateData) => {
+            this.updateMinions(pLocalPillarObfuscateData);
+            return true;
+          },
+          (pLocalPillarObfuscateMsg) => {
+            const allMinionsErr = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions,
+              JSON.stringify(pLocalPillarObfuscateMsg),
+            );
+            this.updateMinions({ return: [allMinionsErr] });
+            return false;
+          },
+        );
         return true;
-      }, (pLocalPillarObfuscateMsg) => {
-        const allMinionsErr = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions, JSON.stringify(pLocalPillarObfuscateMsg));
-        this.updateMinions({"return": [allMinionsErr]});
+      },
+      (pWheelKeyListAllMsg) => {
+        this._handlePillarsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
+        Utils.ignorePromise(localPillarObfuscatePromise);
         return false;
-      });
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      this._handlePillarsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
-      Utils.ignorePromise(localPillarObfuscatePromise);
-      return false;
-    });
+      },
+    );
   }
 
   _handlePillarsWheelKeyListAll (pWheelKeyListAllData) {
@@ -65,7 +88,12 @@ export class PillarsPanel extends Panel {
       this._addMenuItemShowPillars(minionTr.dropdownmenu, minionId);
 
       minionTr.addEventListener("click", (pClickEvent) => {
-        this.router.goTo("pillars-minion", {"minionid": minionId}, undefined, pClickEvent);
+        this.router.goTo(
+          "pillars-minion",
+          { minionid: minionId },
+          undefined,
+          pClickEvent,
+        );
         pClickEvent.stopPropagation();
       });
     }
@@ -76,7 +104,9 @@ export class PillarsPanel extends Panel {
   updateOfflineMinion (pMinionId, pMinionsDict) {
     super.updateOfflineMinion(pMinionId, pMinionsDict, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     // force same columns on all rows
     minionTr.appendChild(Utils.createTd("pillarinfo"));
@@ -85,14 +115,20 @@ export class PillarsPanel extends Panel {
   updateMinion (pMinionData, pMinionId, pAllMinionsGrains) {
     super.updateMinion(null, pMinionId, pAllMinionsGrains, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     let cnt;
     let pillarInfoText;
     if (typeof pMinionData === "object") {
       cnt = Object.keys(pMinionData).length;
-      pillarInfoText = Utils.txtZeroOneMany(cnt,
-        "no pillars", "{0} pillar", "{0} pillars");
+      pillarInfoText = Utils.txtZeroOneMany(
+        cnt,
+        "no pillars",
+        "{0} pillar",
+        "{0} pillars",
+      );
     } else {
       cnt = -1;
       pillarInfoText = "";
@@ -109,7 +145,12 @@ export class PillarsPanel extends Panel {
 
   _addMenuItemShowPillars (pMenu, pMinionId) {
     pMenu.addMenuItem("Show pillars", (pClickEvent) => {
-      this.router.goTo("pillars-minion", {"minionid": pMinionId}, undefined, pClickEvent);
+      this.router.goTo(
+        "pillars-minion",
+        { minionid: pMinionId },
+        undefined,
+        pClickEvent,
+      );
     });
   }
 }

@@ -2,14 +2,13 @@
 
 // documentation utilities
 
-import {Character} from "./Character.js";
-import {CommandBox} from "./CommandBox.js";
-import {ParseCommandLine} from "./ParseCommandLine.js";
-import {TargetType} from "./TargetType.js";
-import {Utils} from "./Utils.js";
+import { Character } from "./Character.js";
+import { CommandBox } from "./CommandBox.js";
+import { ParseCommandLine } from "./ParseCommandLine.js";
+import { TargetType } from "./TargetType.js";
+import { Utils } from "./Utils.js";
 
 export class Documentation {
-
   static _escapeHtml (unsafe) {
     return unsafe
       .replace(/&/g, "&amp;")
@@ -28,21 +27,27 @@ export class Documentation {
 
     pCommandBox.cmdmenu.addMenuItem(
       () => Documentation._manualRunMenuSysDocPrepare(),
-      () => this._manualRunMenuSysDocRun());
+      () => this._manualRunMenuSysDocRun(),
+    );
     pCommandBox.cmdmenu.addMenuItem(
       () => Documentation._manualRunMenuHtmlDocPrepare(),
-      () => Documentation._manualRunMenuHtmlDocRun());
+      () => Documentation._manualRunMenuHtmlDocRun(),
+    );
     pCommandBox.cmdmenu.addMenuItem(
       () => Documentation._manualRunMenuBeaconNamePrepare(),
-      () => Documentation._manualRunMenuBeaconNameRun());
+      () => Documentation._manualRunMenuBeaconNameRun(),
+    );
     pCommandBox.cmdmenu.addMenuItem(
       () => Documentation._manualRunMenuCustomHelpPrepare(),
-      () => Documentation._manualRunMenuCustomHelpRun());
+      () => Documentation._manualRunMenuCustomHelpRun(),
+    );
 
-    Documentation.DOCUMENTATION_URL = "https://docs.saltproject.io/en/latest/ref/";
-    Documentation.EXTERNAL_LINK = Character.NO_BREAK_SPACE + Character.EXTERNAL_LINK_IMG;
+    Documentation.DOCUMENTATION_URL =
+      "https://docs.saltproject.io/en/latest/ref/";
+    Documentation.EXTERNAL_LINK =
+      Character.NO_BREAK_SPACE + Character.EXTERNAL_LINK_IMG;
 
-    Documentation.PROVIDERS = { };
+    Documentation.PROVIDERS = {};
   }
 
   // INTERNAL DOCUMENTATION
@@ -131,17 +136,29 @@ export class Documentation {
 
     const targetType = TargetType.menuTargetType._value;
 
-    const func = this.commandbox.getRunParams(targetType, target, docCommand, true, false);
+    const func = this.commandbox.getRunParams(
+      targetType,
+      target,
+      docCommand,
+      true,
+      false,
+    );
     if (func === null) {
       return;
     }
-    func.then((pResponse) => {
-      CommandBox.onRunReturn(pResponse.return[0], dummyCommand);
-      return true;
-    }, (pResponse) => {
-      CommandBox.onRunReturn("DOCUMENTATION ERROR:\n\n" + JSON.stringify(pResponse), dummyCommand);
-      return false;
-    });
+    func.then(
+      (pResponse) => {
+        CommandBox.onRunReturn(pResponse.return[0], dummyCommand);
+        return true;
+      },
+      (pResponse) => {
+        CommandBox.onRunReturn(
+          "DOCUMENTATION ERROR:\n\n" + JSON.stringify(pResponse),
+          dummyCommand,
+        );
+        return false;
+      },
+    );
   }
 
   // ONLINE DOCUMENTATION
@@ -149,7 +166,6 @@ export class Documentation {
   static _handleLocalTestProviders (data) {
     const providerlists = data.return[0];
     for (const host in providerlists) {
-
       // did we (not) get an answer from the minion?
       if (!providerlists[host]) {
         continue;
@@ -157,7 +173,6 @@ export class Documentation {
 
       const providerlist = providerlists[host];
       for (let key in providerlist) {
-
         const value = providerlist[key];
 
         // Some Windows minions report module names
@@ -206,7 +221,6 @@ export class Documentation {
   }
 
   static getKeywordFragments (pCommandLine) {
-
     const argsArray = [];
     const argsObject = {};
     ParseCommandLine.parseCommandLine(pCommandLine, argsArray, argsObject);
@@ -248,7 +262,9 @@ export class Documentation {
   static _manualRunMenuHtmlDocPrepare () {
     const commandLine = document.querySelector(".run-command #command").value;
     const cmd = Documentation.getKeywordFragments(commandLine);
-    return "Online reference for '" + cmd.join(".").replace(/^modules[.]/, "") + "'";
+    return (
+      "Online reference for '" + cmd.join(".").replace(/^modules[.]/, "") + "'"
+    );
   }
 
   static _manualRunMenuHtmlDocRun () {
@@ -257,10 +273,18 @@ export class Documentation {
 
     // title line
     let html = "";
-    html += "<h3>Documentation for '" + Documentation._escapeHtml(cmd.join(".").replace(/^modules[.]/, "")) + "':</h3>";
+    html +=
+      "<h3>Documentation for '" +
+      Documentation._escapeHtml(cmd.join(".").replace(/^modules[.]/, "")) +
+      "':</h3>";
 
     // level 0
-    html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "' target='_blank' rel='noopener'>Salt Module Reference</a>" + Documentation.EXTERNAL_LINK + "</p>";
+    html +=
+      "<p><a href='" +
+      Documentation.DOCUMENTATION_URL +
+      "' target='_blank' rel='noopener'>Salt Module Reference</a>" +
+      Documentation.EXTERNAL_LINK +
+      "</p>";
 
     // level 1
     // Function getKeywordFragments makes sure that
@@ -272,7 +296,15 @@ export class Documentation {
       // the link to the page must use the same title
       pageTitle = "All 'execution' modules";
     }
-    html += "<p><a href='" + Documentation.DOCUMENTATION_URL + Documentation._escapeHtml(cmd[0]) + "/all/index.html' target='_blank' rel='noopener'>" + Documentation._escapeHtml(pageTitle) + "</a>" + Documentation.EXTERNAL_LINK + "</p>";
+    html +=
+      "<p><a href='" +
+      Documentation.DOCUMENTATION_URL +
+      Documentation._escapeHtml(cmd[0]) +
+      "/all/index.html' target='_blank' rel='noopener'>" +
+      Documentation._escapeHtml(pageTitle) +
+      "</a>" +
+      Documentation.EXTERNAL_LINK +
+      "</p>";
 
     // When the module is a virtual module, we want
     // to show all relevant concrete modules
@@ -285,7 +317,6 @@ export class Documentation {
     // This translation serves both purposes.
     let concreteModules = [];
     if (cmd.length >= 2) {
-
       // only 'modules' has a translation table
       // other categories are taken literal
       if (cmd[0] === "modules") {
@@ -298,31 +329,50 @@ export class Documentation {
       }
 
       if (Object.keys(Documentation.PROVIDERS).length === 0) {
-        html += "<p>The documentation index has not been retrieved yet. We'll just assume this is a regular command.</p>";
+        html +=
+          "<p>The documentation index has not been retrieved yet. We'll just assume this is a regular command.</p>";
         concreteModules = [cmd[1]];
       } else if ("SKIPPED" in Documentation.PROVIDERS) {
-        html += "<p>The documentation index is skipped on this system. We'll just assume this is a regular command.</p>";
+        html +=
+          "<p>The documentation index is skipped on this system. We'll just assume this is a regular command.</p>";
         concreteModules = [cmd[1]];
       } else if ("ERROR" in Documentation.PROVIDERS) {
-        html += "<p>The documentation index could not be retrieved. We'll just assume this is a regular command.</p>";
+        html +=
+          "<p>The documentation index could not be retrieved. We'll just assume this is a regular command.</p>";
         concreteModules = [cmd[1]];
       }
 
       switch (concreteModules.length) {
       case 0:
-        html += "<p>'" + Documentation._escapeHtml(cmd[1]) + "' is an unknown module name. We'll just assume it actually exists. The links below (if any) might not work.</p>";
+        html +=
+            "<p>'" +
+            Documentation._escapeHtml(cmd[1]) +
+            "' is an unknown module name. We'll just assume it actually exists. The links below (if any) might not work.</p>";
         break;
       case 1:
         // simple modules case
         // wheel/runners cases are always simple
         if (cmd[0] !== "modules") {
-          html += "<p>Module-name '" + Documentation._escapeHtml(cmd[0]) + "." + Documentation._escapeHtml(cmd[1]) + "' cannot be verified. We'll just assume it actually exists. The links below might not work.</p>";
+          html +=
+              "<p>Module-name '" +
+              Documentation._escapeHtml(cmd[0]) +
+              "." +
+              Documentation._escapeHtml(cmd[1]) +
+              "' cannot be verified. We'll just assume it actually exists. The links below might not work.</p>";
         } else if (cmd[1] !== concreteModules[0]) {
-          html += "<p>The internal name for '" + Documentation._escapeHtml(cmd[1]) + "' is '" + Documentation._escapeHtml(concreteModules[0]) + "'.</p>";
+          html +=
+              "<p>The internal name for '" +
+              Documentation._escapeHtml(cmd[1]) +
+              "' is '" +
+              Documentation._escapeHtml(concreteModules[0]) +
+              "'.</p>";
         }
         break;
       default:
-        html += "<p>" + concreteModules.length + " variations of this module seem to be used. These all listed below.</p>";
+        html +=
+            "<p>" +
+            concreteModules.length +
+            " variations of this module seem to be used. These all listed below.</p>";
       }
     }
 
@@ -333,7 +383,7 @@ export class Documentation {
       "pkg",
       "service",
       "shadow",
-      "user"
+      "user",
     ];
 
     let indent = "";
@@ -344,29 +394,91 @@ export class Documentation {
     }
 
     for (const concreteModule of concreteModules) {
-
       // level 2
       if (cmd.length >= 2) {
-        html += "<p><a href='" + Documentation.DOCUMENTATION_URL + cmd[0] + "/all/salt." + cmd[0] + "." + concreteModule + ".html' target='_blank' rel='noopener'>Module '" + (cmd[0] + "." + concreteModule).replace(/^modules[.]/, "") + "'</a>" + Documentation.EXTERNAL_LINK + "</p>";
+        html +=
+          "<p><a href='" +
+          Documentation.DOCUMENTATION_URL +
+          cmd[0] +
+          "/all/salt." +
+          cmd[0] +
+          "." +
+          concreteModule +
+          ".html' target='_blank' rel='noopener'>Module '" +
+          (cmd[0] + "." + concreteModule).replace(/^modules[.]/, "") +
+          "'</a>" +
+          Documentation.EXTERNAL_LINK +
+          "</p>";
       }
 
       // level 3
       if (cmd.length >= 3) {
-        html += "<p>Function-name '" + cmd[2] + "' cannot be verified here. We'll just assume it actually exists. The link below might not work.</p>";
-        html += "<p>" + indent + "<a href='" + Documentation.DOCUMENTATION_URL + cmd[0] + "/all/salt." + cmd[0] + "." + concreteModule + ".html#salt." + cmd[0] + "." + concreteModule + "." + cmd[2] + "' target='_blank' rel='noopener'>Function '" + (cmd[0] + "." + concreteModule + "." + cmd[2]).replace(/^modules[.]/, "") + "'</a>" + Documentation.EXTERNAL_LINK + "</p>";
+        html +=
+          "<p>Function-name '" +
+          cmd[2] +
+          "' cannot be verified here. We'll just assume it actually exists. The link below might not work.</p>";
+        html +=
+          "<p>" +
+          indent +
+          "<a href='" +
+          Documentation.DOCUMENTATION_URL +
+          cmd[0] +
+          "/all/salt." +
+          cmd[0] +
+          "." +
+          concreteModule +
+          ".html#salt." +
+          cmd[0] +
+          "." +
+          concreteModule +
+          "." +
+          cmd[2] +
+          "' target='_blank' rel='noopener'>Function '" +
+          (cmd[0] + "." + concreteModule + "." + cmd[2]).replace(
+            /^modules[.]/,
+            "",
+          ) +
+          "'</a>" +
+          Documentation.EXTERNAL_LINK +
+          "</p>";
       }
     }
 
-    if (cmd.length >= 2 && cmd[0] === "modules" && knownVirtualModules.indexOf(cmd[1]) >= 0) {
-      html += "<p>The link below is the overview page of all related virtual package modules.</p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + cmd[0] + "/all/salt." + cmd[0] + "." + cmd[1] + ".html' target='_blank' rel='noopener'>'" + cmd[0] + "." + cmd[1] + "' modules</a>" + Documentation.EXTERNAL_LINK + "</p>";
+    if (
+      cmd.length >= 2 &&
+      cmd[0] === "modules" &&
+      knownVirtualModules.indexOf(cmd[1]) >= 0
+    ) {
+      html +=
+        "<p>The link below is the overview page of all related virtual package modules.</p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        cmd[0] +
+        "/all/salt." +
+        cmd[0] +
+        "." +
+        cmd[1] +
+        ".html' target='_blank' rel='noopener'>'" +
+        cmd[0] +
+        "." +
+        cmd[1] +
+        "' modules</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
 
     // grains?
 
     if (cmd.length >= 2 && cmd[0] === "modules" && cmd[1] === "grains") {
-      html += "<p>It looks you are using grains. The link below gives the overview of the grains modules. </p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "grains/all/index.html' target='_blank' rel='noopener'>Grains Modules</a>" + Documentation.EXTERNAL_LINK + "</p>";
+      html +=
+        "<p>It looks you are using grains. The link below gives the overview of the grains modules. </p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        "grains/all/index.html' target='_blank' rel='noopener'>Grains Modules</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
     // no action for first parameter
     // there are extra pages for grains-functions,
@@ -376,8 +488,14 @@ export class Documentation {
     // pillars?
 
     if (cmd.length >= 2 && cmd[0] === "modules" && cmd[1] === "pillar") {
-      html += "<p>It looks you are using pillars. The link below gives the overview of the pillar modules. </p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "pillar/all/index.html' target='_blank' rel='noopener'>Pillar Modules</a>" + Documentation.EXTERNAL_LINK + "</p>";
+      html +=
+        "<p>It looks you are using pillars. The link below gives the overview of the pillar modules. </p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        "pillar/all/index.html' target='_blank' rel='noopener'>Pillar Modules</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
     // no action for first parameter
     // there are extra pages for pillar-functions,
@@ -387,8 +505,14 @@ export class Documentation {
     // states?
 
     if (cmd.length >= 2 && cmd[0] === "modules" && cmd[1] === "state") {
-      html += "<p>It looks you are using states. The link below gives the overview of the state modules. </p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "states/all/index.html' target='_blank' rel='noopener'>State Modules</a>" + Documentation.EXTERNAL_LINK + "</p>";
+      html +=
+        "<p>It looks you are using states. The link below gives the overview of the state modules. </p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        "states/all/index.html' target='_blank' rel='noopener'>State Modules</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
     // no action for first parameter
     // there are extra pages for state-functions,
@@ -398,8 +522,14 @@ export class Documentation {
     // cloud?
 
     if (cmd.length >= 2 && cmd[0] === "modules" && cmd[1] === "cloud") {
-      html += "<p>It looks you are using cloud. The link below gives the overview of the cloud modules. </p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "clouds/all/index.html' target='_blank' rel='noopener'>Cloud Modules</a>" + Documentation.EXTERNAL_LINK + "</p>";
+      html +=
+        "<p>It looks you are using cloud. The link below gives the overview of the cloud modules. </p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        "clouds/all/index.html' target='_blank' rel='noopener'>Cloud Modules</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
     // no action for first parameter
     // there are extra pages for cloud-functions,
@@ -409,8 +539,14 @@ export class Documentation {
     // beacons?
 
     if (cmd.length >= 2 && cmd[0] === "modules" && cmd[1] === "beacons") {
-      html += "<p>It looks you are using beacons. The link below gives the overview of the beacons modules. </p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "beacons/all/index.html' target='_blank' rel='noopener'>Beacon Modules</a>" + Documentation.EXTERNAL_LINK + "</p>";
+      html +=
+        "<p>It looks you are using beacons. The link below gives the overview of the beacons modules. </p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        "beacons/all/index.html' target='_blank' rel='noopener'>Beacon Modules</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
 
     // also provide information about individual beacons
@@ -419,10 +555,29 @@ export class Documentation {
     const argsObject = {};
     ParseCommandLine.parseCommandLine(commandLine, argsArray, argsObject);
 
-    if (cmd.length >= 3 && cmd[0] === "modules" && cmd[1] === "beacons" && ["add", "modify"].indexOf(cmd[2]) >= 0 && argsArray.length >= 2 && typeof argsArray[1] === "string") {
+    if (
+      cmd.length >= 3 &&
+      cmd[0] === "modules" &&
+      cmd[1] === "beacons" &&
+      ["add", "modify"].indexOf(cmd[2]) >= 0 &&
+      argsArray.length >= 2 &&
+      typeof argsArray[1] === "string"
+    ) {
       const beaconName = argsArray[1];
-      html += "<p>Beacon-name '" + Documentation._escapeHtml(beaconName) + "' cannot be verified. We'll just assume it actually exists. The link below might not work.</p>";
-      html += "<p><a href='" + Documentation.DOCUMENTATION_URL + "beacons/all/salt.beacons." + Documentation._escapeHtml(beaconName) + ".html' target='_blank' rel='noopener'>Beacon Module '" + Documentation._escapeHtml(beaconName) + "'</a>" + Documentation.EXTERNAL_LINK + "</p>";
+      html +=
+        "<p>Beacon-name '" +
+        Documentation._escapeHtml(beaconName) +
+        "' cannot be verified. We'll just assume it actually exists. The link below might not work.</p>";
+      html +=
+        "<p><a href='" +
+        Documentation.DOCUMENTATION_URL +
+        "beacons/all/salt.beacons." +
+        Documentation._escapeHtml(beaconName) +
+        ".html' target='_blank' rel='noopener'>Beacon Module '" +
+        Documentation._escapeHtml(beaconName) +
+        "'</a>" +
+        Documentation.EXTERNAL_LINK +
+        "</p>";
     }
 
     const output = document.querySelector(".run-command pre");
@@ -431,7 +586,10 @@ export class Documentation {
 
   static _manualRunMenuBeaconNamePrepare () {
     const commandLine = document.querySelector(".run-command #command").value;
-    if (commandLine !== "beacons.add" && !commandLine.startsWith("beacons.add ")) {
+    if (
+      commandLine !== "beacons.add" &&
+      !commandLine.startsWith("beacons.add ")
+    ) {
       return null;
     }
     return "List standard beacon names";
@@ -439,7 +597,7 @@ export class Documentation {
 
   static _manualRunMenuBeaconNameRun () {
     const beaconsList = {
-      "adb": `
+      adb: `
                 {
                   "states": [
                     "offline",
@@ -450,22 +608,22 @@ export class Documentation {
                   "battery_low": 25,
                   "interval": 3600
                 }`,
-      "aix_account": `
+      aix_account: `
                 {
                   "user": "ALL",
                   "interval": 3600
                 }`,
-      "avahi_announce": `
+      avahi_announce: `
                 {
                   "run_once": "True",
                   "interval": 3600
                 }`,
-      "bonjour_announce": `
+      bonjour_announce: `
                 {
                   "run_once": "True",
                   "interval": 3600
                 }`,
-      "btmp": `
+      btmp: `
                 {
                   "users": {
                     "gareth": null
@@ -506,7 +664,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "cert_info": `
+      cert_info: `
                 {
                   "files": [
                     "/etc/pki/tls/certs/mycert.pem",
@@ -520,16 +678,16 @@ export class Documentation {
                   "notify_days": 45,
                   "interval": 86400
                 }`,
-      "diskusage": `
+      diskusage: `
                 {
                   "interval": 120
                 }`,
-      "glxinfo": `
+      glxinfo: `
                 {
                   "user": "frank",
                   "interval": 3600
                 }`,
-      "haproxy": `
+      haproxy: `
                 {
                   "backends": {
                     "www-backend": {
@@ -542,11 +700,11 @@ export class Documentation {
                   },
                   "interval": 120
                 }`,
-      "imgadm": `
+      imgadm: `
                 {
                   "interval": 60
                 }`,
-      "inotify": `
+      inotify: `
                 {
                   "files": {
                     "/path/to/file/or/dir": {
@@ -571,7 +729,7 @@ export class Documentation {
                   "coalesce": "True",
                   "interval": 3600
                 }`,
-      "journald": `
+      journald: `
                 {
                   "services": {
                     "sshd": {
@@ -581,11 +739,11 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "junos_rre_keys": `
+      junos_rre_keys: `
                 {
                   "interval": 43200
                 }`,
-      "load": `
+      load: `
                 {
                   "averages": {
                     "1m": [
@@ -605,7 +763,7 @@ export class Documentation {
                   "onchangeonly": false,
                   "interval": 3600
                 }`,
-      "log": `
+      log: `
                 {
                   "file": "/var/log/messages",
                   "tags": {
@@ -615,12 +773,12 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "memusage": `
+      memusage: `
                 {
                   "percent": "63%",
                   "interval": 60
                 }`,
-      "napalm": `
+      napalm: `
                 {
                   "net.interfaces": {
                     "*": {
@@ -646,7 +804,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "network_info": `
+      network_info: `
                 {
                   "interfaces": {
                     "eth0": {
@@ -663,12 +821,12 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "network_settings": `
+      network_settings: `
                 {
                   "coalesce": "True",
                   "interval": 3600
                 }`,
-      "pkg": `
+      pkg: `
                 {
                   "pkgs": [
                     "zsh",
@@ -677,12 +835,12 @@ export class Documentation {
                   "refresh": "True",
                   "interval": 3600
                 }`,
-      "proxy_example": `
+      proxy_example: `
                 {
                   "endpoint": "beacon",
                   "interval": 3600
                 }`,
-      "ps": `
+      ps: `
                 {
                   "processes": {
                     "salt-master": "running",
@@ -690,7 +848,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "salt_monitor": `
+      salt_monitor: `
                 {
                   "salt_fun": "test.ping",
                   "slsutil.renderer": {
@@ -705,7 +863,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "salt_proxy": `
+      salt_proxy: `
                 {
                   "proxies": {
                     "p8000": {},
@@ -713,7 +871,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "sensehat": `
+      sensehat: `
                 {
                   "sensors": {
                     "humidity": "70%",
@@ -726,7 +884,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "service": `
+      service: `
                 {
                   "services": {
                     "salt-master": {},
@@ -734,34 +892,34 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "sh": `
+      sh: `
                 {
                   "interval": 3600
                 }`,
-      "status": `
+      status: `
                 {
                   "interval": 3600
                 }`,
-      "swapusage": `
+      swapusage: `
                 {
                   "percent": "13%",
                   "interval": 60
                 }`,
-      "telegram_bot_msg": `
+      telegram_bot_msg: `
                 {
                   "token": "<bot access token>",
                   "interval": 3600
                 }`,
-      "twilio_txt_msg": `
+      twilio_txt_msg: `
                 {
                   "account_sid": "<account sid>",
                   "interval": 3600
                 }`,
-      "vmadm": `
+      vmadm: `
                 {
                   "interval": 60
                 }`,
-      "watchdog": `
+      watchdog: `
                 {
                   "directories": {
                     "/path/to/dir": {
@@ -775,7 +933,7 @@ export class Documentation {
                   },
                   "interval": 3600
                 }`,
-      "wtmp": `
+      wtmp: `
                 {
                   "users": {
                     "gareth": null
@@ -815,21 +973,28 @@ export class Documentation {
                     }
                   },
                   "interval": 3600
-                }`
+                }`,
     };
 
-    const beaconsListAvailable = Utils.getStorageItemObject("session", "beacons_list_available");
+    const beaconsListAvailable = Utils.getStorageItemObject(
+      "session",
+      "beacons_list_available",
+    );
 
     // show the beacon names
     let html = "<p>Choose a template for 'beacons.add'</p>";
-    html += "<p>Using a template will completely replace the current command</p>";
+    html +=
+      "<p>Using a template will completely replace the current command</p>";
 
     let headerShown1 = false;
     for (const beaconName in beaconsList) {
       if (beaconName.startsWith("_")) {
         continue;
       }
-      if (beaconName in beaconsListAvailable && beaconsListAvailable[beaconName] === beaconsListAvailable["_cnt"]) {
+      if (
+        beaconName in beaconsListAvailable &&
+        beaconsListAvailable[beaconName] === beaconsListAvailable["_cnt"]
+      ) {
         if (!headerShown1) {
           html += "<p>&nbsp;</p>";
           html += "<p>beacons available on all minions:</p>";
@@ -844,13 +1009,23 @@ export class Documentation {
       if (beaconName === "_cnt") {
         continue;
       }
-      if (beaconName in beaconsListAvailable && beaconsListAvailable[beaconName] !== beaconsListAvailable["_cnt"]) {
+      if (
+        beaconName in beaconsListAvailable &&
+        beaconsListAvailable[beaconName] !== beaconsListAvailable["_cnt"]
+      ) {
         if (!headerShown2) {
           html += "<p>&nbsp;</p>";
           html += "<p>beacons available on some minions:</p>";
           headerShown2 = true;
         }
-        html += "<p>&nbsp;&nbsp;<a id='beaconname'>" + beaconName + "</a> (" + beaconsListAvailable[beaconName] + " of " + beaconsListAvailable["_cnt"] + ")</p>";
+        html +=
+          "<p>&nbsp;&nbsp;<a id='beaconname'>" +
+          beaconName +
+          "</a> (" +
+          beaconsListAvailable[beaconName] +
+          " of " +
+          beaconsListAvailable["_cnt"] +
+          ")</p>";
       }
     }
 
@@ -862,12 +1037,18 @@ export class Documentation {
       if (!(beaconName in beaconsList)) {
         if (!headerShown3) {
           html += "<p>&nbsp;</p>";
-          html += "<p>beacons available on one or more minions, but no template available:</p>";
+          html +=
+            "<p>beacons available on one or more minions, but no template available:</p>";
           headerShown3 = true;
         }
         html += "<p>&nbsp;&nbsp;" + beaconName;
         if (beaconsListAvailable[beaconName] !== beaconsListAvailable["_cnt"]) {
-          html += " (" + beaconsListAvailable[beaconName] + " of " + beaconsListAvailable["_cnt"] + ")";
+          html +=
+            " (" +
+            beaconsListAvailable[beaconName] +
+            " of " +
+            beaconsListAvailable["_cnt"] +
+            ")";
         }
         html += "</p>";
       }
@@ -894,10 +1075,12 @@ export class Documentation {
 
     if (beaconsListAvailable.length === 0) {
       html += "<p>&nbsp;</p>";
-      html += "<p>no information is available on the availability of the beacon types on the minions, that information is still being loaded in the background</p>";
+      html +=
+        "<p>no information is available on the availability of the beacon types on the minions, that information is still being loaded in the background</p>";
     } else if (beaconsListAvailable["_offline"] > 0) {
       html += "<p>&nbsp;</p>";
-      html += "<p>some minions are offline and therefore did not provide information about available beacon types</p>";
+      html +=
+        "<p>some minions are offline and therefore did not provide information about available beacon types</p>";
     }
 
     const output = document.querySelector(".run-command pre");
@@ -912,9 +1095,10 @@ export class Documentation {
         if ("interval" in beaconValue[0]) {
           const interval = beaconValue[0]["interval"];
           delete beaconValue[0]["interval"];
-          beaconValue.push({"interval": interval});
+          beaconValue.push({ interval: interval });
         }
-        commandLine.value = "beacons.add " + beaconName + " " + JSON.stringify(beaconValue);
+        commandLine.value =
+          "beacons.add " + beaconName + " " + JSON.stringify(beaconValue);
         pClickEvent.stopPropagation();
       });
     }

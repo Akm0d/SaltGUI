@@ -1,13 +1,12 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {Output} from "../output/Output.js";
-import {OutputYaml} from "../output/OutputYaml.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { Output } from "../output/Output.js";
+import { OutputYaml } from "../output/OutputYaml.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class PillarsMinionPanel extends Panel {
-
   constructor () {
     super("pillars-minion");
 
@@ -21,7 +20,7 @@ export class PillarsMinionPanel extends Panel {
     this.addHelpButton([
       "The content of specific well-known pillar values can be made visible",
       "automatically by configuring their name in the server-side configuration file.",
-      "See README.md for more details."
+      "See README.md for more details.",
     ]);
     this.addWarningField();
     this.addTable(["Name", "Value"]);
@@ -34,18 +33,35 @@ export class PillarsMinionPanel extends Panel {
 
     this.updateTitle("Pillars on " + minionId);
 
-    const useCachePillar = Utils.getStorageItemBoolean("session", "use_cache_for_pillar", false);
-    this.setWarningText("info", useCachePillar ? "the content of this screen is based on cached grains info, minion status or pillar info may not be accurate" : "");
+    const useCachePillar = Utils.getStorageItemBoolean(
+      "session",
+      "use_cache_for_pillar",
+      false,
+    );
+    this.setWarningText(
+      "info",
+      useCachePillar
+        ? "the content of this screen is based on cached grains info, minion status or pillar info may not be accurate"
+        : "",
+    );
 
-    const localPillarItemsPromise = useCachePillar ? this.api.getRunnerCachePillar(minionId) : this.api.getLocalPillarItems(minionId);
+    const localPillarItemsPromise = useCachePillar
+      ? this.api.getRunnerCachePillar(minionId)
+      : this.api.getLocalPillarItems(minionId);
 
-    localPillarItemsPromise.then((pLocalPillarItemsData) => {
-      this._handleLocalPillarItems(pLocalPillarItemsData, minionId);
-      return true;
-    }, (pLocalPillarItemsMsg) => {
-      this._handleLocalPillarItems(JSON.stringify(pLocalPillarItemsMsg), minionId);
-      return false;
-    });
+    localPillarItemsPromise.then(
+      (pLocalPillarItemsData) => {
+        this._handleLocalPillarItems(pLocalPillarItemsData, minionId);
+        return true;
+      },
+      (pLocalPillarItemsMsg) => {
+        this._handleLocalPillarItems(
+          JSON.stringify(pLocalPillarItemsMsg),
+          minionId,
+        );
+        return false;
+      },
+    );
   }
 
   _handleLocalPillarItems (pLocalPillarItemsData, pMinionId) {
@@ -74,7 +90,16 @@ export class PillarsMinionPanel extends Panel {
         publicPillars[i] = new RegExp(publicPillars[i]);
       } catch (err) {
         // most likely a syntax error in the RE
-        Utils.error("error in regexp saltgui_public_pillars[" + i + "]=" + OutputYaml.formatYAML(publicPillars[i]) + " --> " + err.name + ": " + err.message);
+        Utils.error(
+          "error in regexp saltgui_public_pillars[" +
+            i +
+            "]=" +
+            OutputYaml.formatYAML(publicPillars[i]) +
+            " --> " +
+            err.name +
+            ": " +
+            err.message,
+        );
         publicPillars[i] = null;
       }
     }
@@ -91,7 +116,10 @@ export class PillarsMinionPanel extends Panel {
       const pillarValueTd = Utils.createTd();
 
       const pillarValueHidden = Character.BLACK_CIRCLE.repeat(8);
-      const pillarHiddenDiv = Utils.createDiv("pillar-hidden", pillarValueHidden);
+      const pillarHiddenDiv = Utils.createDiv(
+        "pillar-hidden",
+        pillarValueHidden,
+      );
       pillarHiddenDiv.style.display = "inline-block";
       Utils.addToolTip(pillarHiddenDiv, "Click to show");
       // initially use the hidden view
@@ -133,8 +161,12 @@ export class PillarsMinionPanel extends Panel {
       tbody.appendChild(pillar);
     }
 
-    const txt = Utils.txtZeroOneMany(keys.length,
-      "No pillars", "{0} pillar", "{0} pillars");
+    const txt = Utils.txtZeroOneMany(
+      keys.length,
+      "No pillars",
+      "{0} pillar",
+      "{0} pillars",
+    );
     this.setMsg(txt);
   }
 

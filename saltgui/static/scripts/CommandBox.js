@@ -1,18 +1,17 @@
 /* global */
 
-import {Character} from "./Character.js";
-import {Documentation} from "./Documentation.js";
-import {DropDownMenu} from "./DropDown.js";
-import {Output} from "./output/Output.js";
-import {ParseCommandLine} from "./ParseCommandLine.js";
-import {Router} from "./Router.js";
-import {RunType} from "./RunType.js";
-import {TargetType} from "./TargetType.js";
-import {TemplatesPanel} from "./panels/Templates.js";
-import {Utils} from "./Utils.js";
+import { Character } from "./Character.js";
+import { Documentation } from "./Documentation.js";
+import { DropDownMenu } from "./DropDown.js";
+import { Output } from "./output/Output.js";
+import { ParseCommandLine } from "./ParseCommandLine.js";
+import { Router } from "./Router.js";
+import { RunType } from "./RunType.js";
+import { TargetType } from "./TargetType.js";
+import { TemplatesPanel } from "./panels/Templates.js";
+import { Utils } from "./Utils.js";
 
 export class CommandBox {
-
   constructor (pRouter, pApi) {
     this.router = pRouter;
     this.api = pApi;
@@ -44,7 +43,10 @@ export class CommandBox {
     } else {
       title = pCategory;
     }
-    if (CommandBox.templateTmplMenu && CommandBox.templateTmplMenu._templateCategory === pCategory) {
+    if (
+      CommandBox.templateTmplMenu &&
+      CommandBox.templateTmplMenu._templateCategory === pCategory
+    ) {
       title = Character.BLACK_CIRCLE + " " + title;
     }
     return title;
@@ -81,7 +83,7 @@ export class CommandBox {
           } else {
             CommandBox.templateCatMenu.setTitle(category);
           }
-        }
+        },
       );
     }
   }
@@ -96,15 +98,27 @@ export class CommandBox {
       // "(all)" selected, return all
       return pTemplate.description + keyboardHint;
     }
-    if (CommandBox.templateTmplMenu._templateCategory === undefined && pTemplate.category === undefined && pTemplate.categories === undefined) {
+    if (
+      CommandBox.templateTmplMenu._templateCategory === undefined &&
+      pTemplate.category === undefined &&
+      pTemplate.categories === undefined
+    ) {
       // no category selected, return templates without category
       return pTemplate.description + keyboardHint;
     }
-    if (pTemplate.category && pTemplate.category === CommandBox.templateTmplMenu._templateCategory) {
+    if (
+      pTemplate.category &&
+      pTemplate.category === CommandBox.templateTmplMenu._templateCategory
+    ) {
       // item has one category, return when it matches
       return pTemplate.description + keyboardHint;
     }
-    if (pTemplate.categories && pTemplate.categories.indexOf(CommandBox.templateTmplMenu._templateCategory) >= 0) {
+    if (
+      pTemplate.categories &&
+      pTemplate.categories.indexOf(
+        CommandBox.templateTmplMenu._templateCategory,
+      ) >= 0
+    ) {
       // item has a list of categories, return when one matches
       return pTemplate.description + keyboardHint;
     }
@@ -136,7 +150,7 @@ export class CommandBox {
         () => CommandBox._templateTmplMenuItemTitle(template),
         () => {
           CommandBox.applyTemplateByTemplate(template);
-        }
+        },
       );
     }
   }
@@ -147,54 +161,83 @@ export class CommandBox {
 
     txt += "<h2>Target field</h2>";
     txt += "<p>";
-    txt += "Entries that contain a '@', '(', ')' or space are assumed to be a compound target selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/#compound-targeting' target='_blank' rel='noopener'>Compound Targeting" + Documentation.EXTERNAL_LINK + "</a>.";
+    txt +=
+      "Entries that contain a '@', '(', ')' or space are assumed to be a compound target selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/#compound-targeting' target='_blank' rel='noopener'>Compound Targeting" +
+      Documentation.EXTERNAL_LINK +
+      "</a>.";
     txt += "<br/>";
-    txt += "Entries that contain a COMMA are assumed to be a list target selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/globbing.html#lists' target='_blank' rel='noopener'>List Targeting" + Documentation.EXTERNAL_LINK + "</a>.";
+    txt +=
+      "Entries that contain a COMMA are assumed to be a list target selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/globbing.html#lists' target='_blank' rel='noopener'>List Targeting" +
+      Documentation.EXTERNAL_LINK +
+      "</a>.";
     txt += "<br/>";
-    txt += "Entries that start with a '#' are assumed to be a nodegroup target selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/nodegroups.html' target='_blank' rel='noopener'>Nodegroup Targeting" + Documentation.EXTERNAL_LINK + "</a>.";
+    txt +=
+      "Entries that start with a '#' are assumed to be a nodegroup target selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/nodegroups.html' target='_blank' rel='noopener'>Nodegroup Targeting" +
+      Documentation.EXTERNAL_LINK +
+      "</a>.";
     txt += "<br/>";
-    txt += "Target '##connected' will immediately be replaced by the latest known list of connected minions.";
+    txt +=
+      "Target '##connected' will immediately be replaced by the latest known list of connected minions.";
     txt += "<br/>";
-    txt += "Otherwise, the target is assumed to be a regular glob selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/globbing.html#globbing' target='_blank' rel='noopener'>Globbing Targeting" + Documentation.EXTERNAL_LINK + "</a>.";
+    txt +=
+      "Otherwise, the target is assumed to be a regular glob selection. See <a href='https://docs.saltproject.io/en/latest/topics/targeting/globbing.html#globbing' target='_blank' rel='noopener'>Globbing Targeting" +
+      Documentation.EXTERNAL_LINK +
+      "</a>.";
     txt += "<br/>";
-    txt += "The dropdown-box to the right of the field is automatically updated with the assumed target type. When you do not agree, it is possible to manually select a value. That value will then be left alone by the system. Note that the dropdown-box only contains the choice 'Nodegroup' when nodegroups are configured in the <b>master</b> file.";
+    txt +=
+      "The dropdown-box to the right of the field is automatically updated with the assumed target type. When you do not agree, it is possible to manually select a value. That value will then be left alone by the system. Note that the dropdown-box only contains the choice 'Nodegroup' when nodegroups are configured in the <b>master</b> file.";
     txt += "<br/>";
-    txt += "For <b>wheel</b> commands, the value of the target field is added to the commandline as the named variable 'match'. Wheel commands that do not use that parameter do not have a problem with that.";
+    txt +=
+      "For <b>wheel</b> commands, the value of the target field is added to the commandline as the named variable 'match'. Wheel commands that do not use that parameter do not have a problem with that.";
     txt += "<br/>";
-    txt += "For <b>runners</b> commands, the value of the target field can be left empty. Any value is silently ignored.";
+    txt +=
+      "For <b>runners</b> commands, the value of the target field can be left empty. Any value is silently ignored.";
     txt += "</p>";
 
     txt += "<br/>";
 
     txt += "<h2>Command field</h2>";
     txt += "<p>";
-    txt += "The command field is used to enter the command and its parameters. Double quotes (\") are needed around each item that contains spaces, or when it is otherwise mistaken for a number, boolean, list or object according to the <a href='https://tools.ietf.org/html/rfc7159' target='_blank' rel='noopener'>JSON" + Documentation.EXTERNAL_LINK + "</a> notation. Additionally, strings in the form \"\"\"string\"\"\" are recognized. This is a notation from the <a href='https://docs.python.org/3/tutorial/introduction.html#strings' target='_blank' rel='noopener'>Python" + Documentation.EXTERNAL_LINK + "</a> language, which is very useful for the construction of strings that need to contain double-quote characters. This form does not handle any escape characters.";
+    txt +=
+      "The command field is used to enter the command and its parameters. Double quotes (\") are needed around each item that contains spaces, or when it is otherwise mistaken for a number, boolean, list or object according to the <a href='https://tools.ietf.org/html/rfc7159' target='_blank' rel='noopener'>JSON" +
+      Documentation.EXTERNAL_LINK +
+      "</a> notation. Additionally, strings in the form \"\"\"string\"\"\" are recognized. This is a notation from the <a href='https://docs.python.org/3/tutorial/introduction.html#strings' target='_blank' rel='noopener'>Python" +
+      Documentation.EXTERNAL_LINK +
+      "</a> language, which is very useful for the construction of strings that need to contain double-quote characters. This form does not handle any escape characters.";
     txt += "<br/>";
-    txt += "Parameters in the form name=value are used to pass named variables. The same quoting rules apply to the value. The named parameters are used from left-to-right. Their actual position within the line is otherwise not important.";
+    txt +=
+      "Parameters in the form name=value are used to pass named variables. The same quoting rules apply to the value. The named parameters are used from left-to-right. Their actual position within the line is otherwise not important.";
     txt += "<br/>";
-    txt += "Enter `salt-run` commands with the prefix `runners.`. e.g. `runners.jobs.last_run`. The target field can remain empty in that case as it is not used.";
+    txt +=
+      "Enter `salt-run` commands with the prefix `runners.`. e.g. `runners.jobs.last_run`. The target field can remain empty in that case as it is not used.";
     txt += "<br/>";
-    txt += "Enter `salt-call` commands with the prefix `wheel.`. e.g. `wheel.key.finger`. The target field will be added as named parameter `target`. But note that that parameter may not actually be used depending on the command.";
+    txt +=
+      "Enter `salt-call` commands with the prefix `wheel.`. e.g. `wheel.key.finger`. The target field will be added as named parameter `target`. But note that that parameter may not actually be used depending on the command.";
     txt += "<br/>";
-    txt += "A help button is visible when the command field contains some text. It will issue a <b>sys.doc</b> (or <b>runners.doc.wheel</b> or <b>runners.doc.runner</b>) command for the current command. The <b>sys.doc</b> command will be targetted to the given minions when the target field is not empty. It will be targetted to all minions when it is empty. The <b>runners.doc.wheel</b> or <b>runners.doc.runner</b> commands will always run on the master. When answers from multiple minions are available from <b>sys.doc</b>, only the first reasonable answer is used. Small variations in the answer may exist when not all minions have the same software version.";
+    txt +=
+      "A help button is visible when the command field contains some text. It will issue a <b>sys.doc</b> (or <b>runners.doc.wheel</b> or <b>runners.doc.runner</b>) command for the current command. The <b>sys.doc</b> command will be targetted to the given minions when the target field is not empty. It will be targetted to all minions when it is empty. The <b>runners.doc.wheel</b> or <b>runners.doc.runner</b> commands will always run on the master. When answers from multiple minions are available from <b>sys.doc</b>, only the first reasonable answer is used. Small variations in the answer may exist when not all minions have the same software version.";
     txt += "</p>";
 
     txt += "<br/>";
 
     txt += "<h2>Run command button</h2>";
     txt += "<p>";
-    txt += "The 'Run command' button starts the given command for the given minions.";
+    txt +=
+      "The 'Run command' button starts the given command for the given minions.";
     txt += "<br/>";
-    txt += "A dropdown menu to the right of the button can be used to specify that the command must be run asynchronously. In that case, the output consists only of a link to retrieve the actual output and also an indication on the progress per minion, which will be updated asynchronously. When option <b>state_events</b> is set to <b>true</b> in the <b>master</b> file, then also the progress of individual states is shown.";
+    txt +=
+      "A dropdown menu to the right of the button can be used to specify that the command must be run asynchronously. In that case, the output consists only of a link to retrieve the actual output and also an indication on the progress per minion, which will be updated asynchronously. When option <b>state_events</b> is set to <b>true</b> in the <b>master</b> file, then also the progress of individual states is shown.";
     txt += "<br/>";
-    txt += "When a command takes too long, the command window can be closed without waiting for the output. The Jobs page can then be used to find that command and watch its progress or results.";
+    txt +=
+      "When a command takes too long, the command window can be closed without waiting for the output. The Jobs page can then be used to find that command and watch its progress or results.";
     txt += "</p>";
 
     txt += "<br/>";
 
     txt += "<h2>Output panel</h2>";
     txt += "<p>";
-    txt += "When the output is recognized as output from (a command similar to) <b>state.highstate</b>, then the output is formatted for readability. e.g. durations shorter than 10 milliseconds are removed. On the same line as the minion name, a summary is shown in the form of coloured CIRCLE characters. There is one character for each state. When the circle has a double bar over/under it (it is always both) then the state reported that work was done and it may be interesting to see it. Clicking on a circle will scroll to the corresponding state output and shortly highlight it.";
+    txt +=
+      "When the output is recognized as output from (a command similar to) <b>state.highstate</b>, then the output is formatted for readability. e.g. durations shorter than 10 milliseconds are removed. On the same line as the minion name, a summary is shown in the form of coloured CIRCLE characters. There is one character for each state. When the circle has a double bar over/under it (it is always both) then the state reported that work was done and it may be interesting to see it. Clicking on a circle will scroll to the corresponding state output and shortly highlight it.";
     txt += "<br/>";
     txt += "Clicking on any output will scroll back to the minion name.";
     txt += "<br/>";
@@ -205,15 +248,17 @@ export class CommandBox {
 
     txt += "<h2>Templates</h2>";
     txt += "<p>";
-    txt += "The server-side configuration file can define common used values for the target and command fields, or combinations of these. The command menu to use these templates becomes visible on this screen when there is at least one template defined in the configuration file. See README.md for more details.";
+    txt +=
+      "The server-side configuration file can define common used values for the target and command fields, or combinations of these. The command menu to use these templates becomes visible on this screen when there is at least one template defined in the configuration file. See README.md for more details.";
     txt += "</p>";
 
     output.innerHTML = txt;
   }
 
   _registerCommandBoxEventListeners () {
-    document.getElementById("popup-run-command").addEventListener(
-      "click", (pClickEvent) => {
+    document
+      .getElementById("popup-run-command")
+      .addEventListener("click", (pClickEvent) => {
         // only close if click is really outside the window
         // and not from any child element
         if (pClickEvent.target.id === "popup-run-command") {
@@ -221,38 +266,39 @@ export class CommandBox {
         }
         pClickEvent.stopPropagation();
       });
-    document.getElementById("button-manual-run").addEventListener(
-      "click", (pClickEvent) => {
+    document
+      .getElementById("button-manual-run")
+      .addEventListener("click", (pClickEvent) => {
         CommandBox.showManualRun(this.api);
         pClickEvent.stopPropagation();
       });
-    document.getElementById("cmd-close-button").addEventListener(
-      "click", (pClickEvent) => {
+    document
+      .getElementById("cmd-close-button")
+      .addEventListener("click", (pClickEvent) => {
         CommandBox.hideManualRun();
         pClickEvent.stopPropagation();
       });
 
-    document.querySelector(".run-command input[type='submit']").
-      addEventListener("click", (pClickEvent) => {
+    document
+      .querySelector(".run-command input[type='submit']")
+      .addEventListener("click", (pClickEvent) => {
         this._onRun();
         pClickEvent.stopPropagation();
       });
 
-    document.getElementById("target").
-      addEventListener("input", () => {
-        const targetField = document.getElementById("target");
-        if (targetField.value === "##connected") {
-          // just replace it with the actual value
-          targetField.value = Utils.getStorageItem("session", "connected", "");
-        }
-        const targetType = targetField.value;
-        TargetType.autoSelectTargetType(targetType);
-      });
+    document.getElementById("target").addEventListener("input", () => {
+      const targetField = document.getElementById("target");
+      if (targetField.value === "##connected") {
+        // just replace it with the actual value
+        targetField.value = Utils.getStorageItem("session", "connected", "");
+      }
+      const targetType = targetField.value;
+      TargetType.autoSelectTargetType(targetType);
+    });
 
-    document.getElementById("command").
-      addEventListener("input", () => {
-        this.cmdmenu.verifyAll();
-      });
+    document.getElementById("command").addEventListener("input", () => {
+      this.cmdmenu.verifyAll();
+    });
   }
 
   static applyTemplateByProperties (pTargetType, pTarget, pCommand) {
@@ -260,7 +306,12 @@ export class CommandBox {
       const targetbox = document.getElementById("target-box");
       // show the extended selection controls when
       targetbox.style.display = "inherit";
-      if (pTargetType !== "glob" && pTargetType !== "list" && pTargetType !== "compound" && pTargetType !== "nodegroup") {
+      if (
+        pTargetType !== "glob" &&
+        pTargetType !== "list" &&
+        pTargetType !== "compound" &&
+        pTargetType !== "nodegroup"
+      ) {
         // we don't support that, revert to standard (not default)
         pTargetType = "glob";
       }
@@ -283,7 +334,11 @@ export class CommandBox {
   }
 
   static applyTemplateByTemplate (pTemplate) {
-    CommandBox.applyTemplateByProperties(pTemplate.targettype, pTemplate.target, pTemplate.command);
+    CommandBox.applyTemplateByProperties(
+      pTemplate.targettype,
+      pTemplate.target,
+      pTemplate.command,
+    );
   }
 
   static applyTemplateByName (pTemplateName) {
@@ -325,7 +380,7 @@ export class CommandBox {
       "schedule.run_job": ["*"],
       "state.apply": ["highstate"],
       "state.highstate": ["highstate"],
-      "state.sls_id": ["issues"]
+      "state.sls_id": ["issues"],
     };
   }
 
@@ -347,7 +402,9 @@ export class CommandBox {
     const commandValueNoTabs = commandValue.replace(patWhitespaceAll, " ");
     if (commandValueNoTabs !== commandValue) {
       commandField.value = commandValueNoTabs;
-      CommandBox._showError("The command contains unsupported whitespace characters.\nThese have now been replaced by regular space characters.\nUse 'Run command' again to run the updated command.");
+      CommandBox._showError(
+        "The command contains unsupported whitespace characters.\nThese have now been replaced by regular space characters.\nUse 'Run command' again to run the updated command.",
+      );
       return;
     }
 
@@ -391,18 +448,21 @@ export class CommandBox {
       }
     }
 
-    func.then((pResponse) => {
-      if (pResponse) {
-        CommandBox.onRunReturn(pResponse.return[0], commandValue);
-        CommandBox._prepareForAsyncResults(pResponse);
-      } else {
-        CommandBox._showError("null response");
-      }
-      return true;
-    }, (pResponse) => {
-      CommandBox._showError(JSON.stringify(pResponse));
-      return false;
-    });
+    func.then(
+      (pResponse) => {
+        if (pResponse) {
+          CommandBox.onRunReturn(pResponse.return[0], commandValue);
+          CommandBox._prepareForAsyncResults(pResponse);
+        } else {
+          CommandBox._showError("null response");
+        }
+        return true;
+      },
+      (pResponse) => {
+        CommandBox._showError(JSON.stringify(pResponse));
+        return false;
+      },
+    );
   }
 
   static onRunReturn (pResponse, pCommand) {
@@ -414,7 +474,16 @@ export class CommandBox {
       minions = ["WHEEL"];
     }
     // do not suppress the jobId (even when we can)
-    Output.addResponseOutput(outputContainer, null, minions, pResponse, pCommand, "done", undefined, undefined);
+    Output.addResponseOutput(
+      outputContainer,
+      null,
+      minions,
+      pResponse,
+      pCommand,
+      "done",
+      undefined,
+      undefined,
+    );
     const targetField = document.getElementById("target");
     const commandField = document.getElementById("command");
     const button = document.querySelector(".run-command input[type='submit']");
@@ -424,7 +493,11 @@ export class CommandBox {
   }
 
   static getSelectedMinionList () {
-    const selectVisible = Utils.getStorageItemBoolean("session", "select_visible", false);
+    const selectVisible = Utils.getStorageItemBoolean(
+      "session",
+      "select_visible",
+      false,
+    );
     if (!selectVisible) {
       return null;
     }
@@ -448,7 +521,8 @@ export class CommandBox {
     manualRun.style.display = "block";
 
     const outputField = document.querySelector(".run-command pre");
-    outputField.innerText = "Waiting for command" + Character.HORIZONTAL_ELLIPSIS;
+    outputField.innerText =
+      "Waiting for command" + Character.HORIZONTAL_ELLIPSIS;
 
     const targetField = document.getElementById("target");
     TargetType.autoSelectTargetType(targetField.value);
@@ -498,7 +572,7 @@ export class CommandBox {
     CommandBox._populateTemplateTmplMenu();
     CommandBox._populateTestProviders(pApi);
 
-    const lst = CommandBox.getSelectedMinionList()
+    const lst = CommandBox.getSelectedMinionList();
     if (lst) {
       const targetField = document.getElementById("target");
       targetField.value = lst;
@@ -512,18 +586,25 @@ export class CommandBox {
       return;
     }
 
-    const target = Utils.getStorageItem("session", "test_providers_target", "*");
+    const target = Utils.getStorageItem(
+      "session",
+      "test_providers_target",
+      "*",
+    );
     if (target === "SKIP") {
-      Documentation.PROVIDERS = {"SKIPPED": []};
+      Documentation.PROVIDERS = { SKIPPED: [] };
       return;
     }
 
     const localTestProviders = pApi.getLocalTestProviders(target);
-    localTestProviders.then((pData) => {
-      Documentation._handleLocalTestProviders(pData);
-    }, () => {
-      Documentation.PROVIDERS = {"ERROR": []};
-    });
+    localTestProviders.then(
+      (pData) => {
+        Documentation._handleLocalTestProviders(pData);
+      },
+      () => {
+        Documentation.PROVIDERS = { ERROR: [] };
+      },
+    );
   }
 
   static hideManualRun () {
@@ -543,8 +624,13 @@ export class CommandBox {
     CommandBox.onRunReturn("ERROR:\n\n" + pMessage, "");
   }
 
-  getRunParams (pTargetType, pTarget, pToRun, pisRunTypeNormalOnly = false, pCanUseFullReturn = true) {
-
+  getRunParams (
+    pTargetType,
+    pTarget,
+    pToRun,
+    pisRunTypeNormalOnly = false,
+    pCanUseFullReturn = true,
+  ) {
     // The leading # was used to indicate a nodegroup
     if (pTargetType === "nodegroup" && pTarget.startsWith("#")) {
       pTarget = pTarget.substring(1);
@@ -561,7 +647,11 @@ export class CommandBox {
     // collection for named parameters
     const argsObject = {};
 
-    const ret = ParseCommandLine.parseCommandLine(pToRun, argsArray, argsObject);
+    const ret = ParseCommandLine.parseCommandLine(
+      pToRun,
+      argsArray,
+      argsObject,
+    );
     if (ret !== null) {
       // that is an error message being returned
       CommandBox._showError(ret);
@@ -569,20 +659,27 @@ export class CommandBox {
     }
 
     if (argsArray.length === 0) {
-      CommandBox._showError("First (unnamed) parameter is the function name, it is mandatory");
+      CommandBox._showError(
+        "First (unnamed) parameter is the function name, it is mandatory",
+      );
       return null;
     }
 
     const functionToRun = argsArray.shift();
 
     if (typeof functionToRun !== "string") {
-      CommandBox._showError("First (unnamed) parameter is the function name, it must be a string, not a " + typeof functionToRun);
+      CommandBox._showError(
+        "First (unnamed) parameter is the function name, it must be a string, not a " +
+          typeof functionToRun,
+      );
       return null;
     }
 
     // prevent a common spelling error
     if (functionToRun === "runner" || functionToRun.startsWith("runner.")) {
-      CommandBox._showError("'Runner' commands must be prefixed with 'runners.'");
+      CommandBox._showError(
+        "'Runner' commands must be prefixed with 'runners.'",
+      );
       return null;
     }
 
@@ -590,7 +687,11 @@ export class CommandBox {
     // WHEEL commands also do not have a target
     // but we use the TARGET value to form the usually required MATCH parameter
     // therefore for WHEEL commands it is still required
-    if (pTarget === "" && functionToRun !== "runners" && !functionToRun.startsWith("runners.")) {
+    if (
+      pTarget === "" &&
+      functionToRun !== "runners" &&
+      !functionToRun.startsWith("runners.")
+    ) {
       CommandBox._showError("'Target' field cannot be empty");
       return null;
     }
@@ -605,7 +706,9 @@ export class CommandBox {
       }
     }
 
-    const fullReturn = pCanUseFullReturn && Utils.getStorageItemBoolean("session", "full_return");
+    const fullReturn =
+      pCanUseFullReturn &&
+      Utils.getStorageItemBoolean("session", "full_return");
 
     let params = {};
     if (functionToRun.startsWith("runners.")) {
@@ -653,7 +756,9 @@ export class CommandBox {
         // return will look like:
         // { "jid": "20180718173942195461", "minions": [ ... ] }
       } else {
-        CommandBox._showError("Async is not supported for '" + functionToRun + "'");
+        CommandBox._showError(
+          "Async is not supported for '" + functionToRun + "'",
+        );
         return null;
       }
     }
@@ -669,7 +774,10 @@ export class CommandBox {
     const minionSpan1 = Utils.createSpan("", pMinionId);
     div.appendChild(minionSpan1);
 
-    const minionSpan2 = Utils.createSpan("", ": " + Character.HOURGLASS_WITH_FLOWING_SAND + " ");
+    const minionSpan2 = Utils.createSpan(
+      "",
+      ": " + Character.HOURGLASS_WITH_FLOWING_SAND + " ",
+    );
     div.appendChild(minionSpan2);
 
     return div;
@@ -796,7 +904,8 @@ export class CommandBox {
     const warnSpan = Utils.createSpan(
       "",
       "\nnote that unresponsive minions will not time out in this overview",
-      "unresponsive");
+      "unresponsive",
+    );
     output.appendChild(warnSpan);
   }
 }

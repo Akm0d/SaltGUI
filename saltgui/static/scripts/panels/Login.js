@@ -1,13 +1,12 @@
 /* global */
 
-import {BeaconsMinionPanel} from "../panels/BeaconsMinion.js";
-import {Character} from "../Character.js";
-import {Panel} from "./Panel.js";
-import {Router} from "../Router.js";
-import {Utils} from "../Utils.js";
+import { BeaconsMinionPanel } from "../panels/BeaconsMinion.js";
+import { Character } from "../Character.js";
+import { Panel } from "./Panel.js";
+import { Router } from "../Router.js";
+import { Utils } from "../Utils.js";
 
 export class LoginPanel extends Panel {
-
   constructor () {
     LoginPanel.version = "SaltGUI v1.34.0-SNAPSHOT";
 
@@ -28,7 +27,11 @@ export class LoginPanel extends Panel {
     form.append(motdHtml);
     this.motdHtmlDiv = motdHtml;
 
-    const noticeWrapper = Utils.createDiv("notice-wrapper", "", "notice-wrapper");
+    const noticeWrapper = Utils.createDiv(
+      "notice-wrapper",
+      "",
+      "notice-wrapper",
+    );
     form.append(noticeWrapper);
     this.noticeWrapperDiv = noticeWrapper;
 
@@ -68,7 +71,9 @@ export class LoginPanel extends Panel {
     const img = Utils.createElem("img");
     const setGitHubLogo = () => {
       const isDarkTheme = document.documentElement.dataset.theme === "dark";
-      img.src = isDarkTheme ? "static/images/GitHub_Invertocat_White.png" : "static/images/GitHub_Invertocat_Black.png";
+      img.src = isDarkTheme
+        ? "static/images/GitHub_Invertocat_White.png"
+        : "static/images/GitHub_Invertocat_Black.png";
     };
     setGitHubLogo();
     new MutationObserver(setGitHubLogo).observe(document.documentElement, {
@@ -137,7 +142,9 @@ export class LoginPanel extends Panel {
       if (saltAuth.length === 0) {
         // no cheating
         /* eslint-disable no-console */
-        console.warn("salt-auth-txt has no entries, except 'CLEAR', assuming 'pam'");
+        console.warn(
+          "salt-auth-txt has no entries, except 'CLEAR', assuming 'pam'",
+        );
         /* eslint-enable no-console */
         saltAuth = ["pam"];
       }
@@ -147,7 +154,11 @@ export class LoginPanel extends Panel {
         this.eauthField.style.display = "none";
         Utils.setStorageItem("local", "eauth", saltAuth[0]);
       }
-      this.eauthField.value = Utils.getStorageItem("local", "eauth", saltAuth[0]);
+      this.eauthField.value = Utils.getStorageItem(
+        "local",
+        "eauth",
+        saltAuth[0],
+      );
     } else {
       this._addEauthSection("salt-auth.txt", saltAuth);
       this.eauthField.value = Utils.getStorageItem("local", "eauth", "pam");
@@ -183,75 +194,93 @@ export class LoginPanel extends Panel {
   _loadSaltAuthTxt () {
     const staticSaltAuthTxtPromise = this.api.getStaticSaltAuthTxt();
 
-    staticSaltAuthTxtPromise.then((pStaticSaltAuthTxt) => {
-      if (pStaticSaltAuthTxt) {
-        const lines = pStaticSaltAuthTxt.
-          trim().
-          split(/\r?\n/).
-          filter((item) => !item.startsWith("#"));
-        const saltAuth = [];
-        for (const line of lines) {
-          const fields = line.split(/[ \t]+/);
-          if (fields.length === 1) {
-            saltAuth.push(fields[0]);
-          } else {
-            /* eslint-disable no-console */
-            console.warn("lines in 'salt-auth.txt' must have 1 word, not " + fields.length + " like in: " + line);
-            /* eslint-enable no-console */
+    staticSaltAuthTxtPromise.then(
+      (pStaticSaltAuthTxt) => {
+        if (pStaticSaltAuthTxt) {
+          const lines = pStaticSaltAuthTxt
+            .trim()
+            .split(/\r?\n/)
+            .filter((item) => !item.startsWith("#"));
+          const saltAuth = [];
+          for (const line of lines) {
+            const fields = line.split(/[ \t]+/);
+            if (fields.length === 1) {
+              saltAuth.push(fields[0]);
+            } else {
+              /* eslint-disable no-console */
+              console.warn(
+                "lines in 'salt-auth.txt' must have 1 word, not " +
+                  fields.length +
+                  " like in: " +
+                  line,
+              );
+              /* eslint-enable no-console */
+            }
           }
+          Utils.setStorageItem(
+            "local",
+            "salt-auth-txt",
+            JSON.stringify(saltAuth),
+          );
+          this._updateEauthField();
+        } else {
+          Utils.setStorageItem("local", "salt-auth-txt", "[]");
+          this._updateEauthField();
         }
-        Utils.setStorageItem("local", "salt-auth-txt", JSON.stringify(saltAuth));
-        this._updateEauthField();
-      } else {
+        return true;
+      },
+      () => {
         Utils.setStorageItem("local", "salt-auth-txt", "[]");
         this._updateEauthField();
-      }
-      return true;
-    }, () => {
-      Utils.setStorageItem("local", "salt-auth-txt", "[]");
-      this._updateEauthField();
-      return false;
-    });
+        return false;
+      },
+    );
   }
 
   _loadSaltMotdTxt () {
     const staticSaltMotdTxtPromise = this.api.getStaticSaltMotdTxt();
 
-    staticSaltMotdTxtPromise.then((pStaticSaltMotdTxt) => {
-      if (pStaticSaltMotdTxt) {
-        const lines = pStaticSaltMotdTxt.trim();
-        Utils.setStorageItem("local", "salt-motd-txt", lines);
-        this._updateMotdField();
-      } else {
+    staticSaltMotdTxtPromise.then(
+      (pStaticSaltMotdTxt) => {
+        if (pStaticSaltMotdTxt) {
+          const lines = pStaticSaltMotdTxt.trim();
+          Utils.setStorageItem("local", "salt-motd-txt", lines);
+          this._updateMotdField();
+        } else {
+          Utils.setStorageItem("local", "salt-motd-txt", "");
+          this._updateMotdField();
+        }
+        return true;
+      },
+      () => {
         Utils.setStorageItem("local", "salt-motd-txt", "");
         this._updateMotdField();
-      }
-      return true;
-    }, () => {
-      Utils.setStorageItem("local", "salt-motd-txt", "");
-      this._updateMotdField();
-      return false;
-    });
+        return false;
+      },
+    );
   }
 
   _loadSaltMotdHtml () {
     const staticSaltMotdHtmlPromise = this.api.getStaticSaltMotdHtml();
 
-    staticSaltMotdHtmlPromise.then((pStaticSaltMotdHtml) => {
-      if (pStaticSaltMotdHtml) {
-        const lines = pStaticSaltMotdHtml.trim();
-        Utils.setStorageItem("local", "salt-motd-html", lines);
-        this._updateMotdField();
-      } else {
+    staticSaltMotdHtmlPromise.then(
+      (pStaticSaltMotdHtml) => {
+        if (pStaticSaltMotdHtml) {
+          const lines = pStaticSaltMotdHtml.trim();
+          Utils.setStorageItem("local", "salt-motd-html", lines);
+          this._updateMotdField();
+        } else {
+          Utils.setStorageItem("local", "salt-motd-html", "");
+          this._updateMotdField();
+        }
+        return true;
+      },
+      () => {
         Utils.setStorageItem("local", "salt-motd-html", "");
         this._updateMotdField();
-      }
-      return true;
-    }, () => {
-      Utils.setStorageItem("local", "salt-motd-html", "");
-      this._updateMotdField();
-      return false;
-    });
+        return false;
+      },
+    );
   }
 
   onShow () {
@@ -268,21 +297,41 @@ export class LoginPanel extends Panel {
       break;
     case "no-session":
       // gray because we cannot prove that the user was/wasnt logged in
-      this._showNoticeText("var(--color-notice-muted)", "Not logged in", "notice_not_logged_in");
+      this._showNoticeText(
+        "var(--color-notice-muted)",
+        "Not logged in",
+        "notice_not_logged_in",
+      );
       break;
     case "session-cancelled":
-      this._showNoticeText("var(--color-notice-danger)", "Session cancelled", "notice-session-cancelled");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        "Session cancelled",
+        "notice-session-cancelled",
+      );
       break;
     case "session-expired":
-      this._showNoticeText("var(--color-notice-danger)", "Session expired", "notice-session-expired");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        "Session expired",
+        "notice-session-expired",
+      );
       break;
     case "logout":
       // gray because this is the result of a user action
-      this._showNoticeText("var(--color-notice-muted)", "Logout", "notice_logout");
+      this._showNoticeText(
+        "var(--color-notice-muted)",
+        "Logout",
+        "notice_logout",
+      );
       break;
     default:
       // should not occur
-      this._showNoticeText("var(--color-notice-danger)", reason, "notice_other:" + reason);
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        reason,
+        "notice_other:" + reason,
+      );
     }
 
     this._enableLoginControls(true);
@@ -301,17 +350,24 @@ export class LoginPanel extends Panel {
     }
 
     this._enableLoginControls(false);
-    this.api.login(username, password, eauth).then(() => {
-      this._onLoginSuccess();
-      return true;
-    }, (pErr) => {
-      this._onLoginFailure(pErr);
-      return false;
-    });
+    this.api.login(username, password, eauth).then(
+      () => {
+        this._onLoginSuccess();
+        return true;
+      },
+      (pErr) => {
+        this._onLoginFailure(pErr);
+        return false;
+      },
+    );
   }
 
   _onLoginSuccess () {
-    this._showNoticeText("var(--color-text-accent)", "Please wait" + Character.HORIZONTAL_ELLIPSIS, "notice_please_wait");
+    this._showNoticeText(
+      "var(--color-text-accent)",
+      "Please wait" + Character.HORIZONTAL_ELLIPSIS,
+      "notice_please_wait",
+    );
 
     Utils.setStorageItem("local", "salt-motd-txt", "");
     Utils.setStorageItem("local", "salt-motd-html", "");
@@ -341,13 +397,13 @@ export class LoginPanel extends Panel {
         }
       }
     }, 1000);
-
   }
 
   bootstrapSession () {
     // We need these functions to populate the dropdown boxes
     const wheelConfigValuesPromise = this.api.getWheelConfigValues();
-    const runnerStateOrchestrateShowSlsPromise = this.api.getRunnerStateOrchestrateShowSls();
+    const runnerStateOrchestrateShowSlsPromise =
+      this.api.getRunnerStateOrchestrateShowSls();
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
 
     // these may have been hidden on a previous logout
@@ -355,31 +411,44 @@ export class LoginPanel extends Panel {
 
     // We need these functions to populate the dropdown boxes
     // or determine visibility of menu items
-    wheelConfigValuesPromise.then((pWheelConfigValuesData) => {
-      LoginPanel._handleLoginWheelConfigValues(pWheelConfigValuesData);
-      Router.updateMainMenu();
-      return true;
-    }, () => false);
-    runnerStateOrchestrateShowSlsPromise.then((pRunnerStateOrchestrateShowSlsData) => {
-      LoginPanel._handleRunnerStateOrchestrateShowSls(pRunnerStateOrchestrateShowSlsData);
-      Router.updateMainMenu();
-      return true;
-    }, () => false);
+    wheelConfigValuesPromise.then(
+      (pWheelConfigValuesData) => {
+        LoginPanel._handleLoginWheelConfigValues(pWheelConfigValuesData);
+        Router.updateMainMenu();
+        return true;
+      },
+      () => false,
+    );
+    runnerStateOrchestrateShowSlsPromise.then(
+      (pRunnerStateOrchestrateShowSlsData) => {
+        LoginPanel._handleRunnerStateOrchestrateShowSls(
+          pRunnerStateOrchestrateShowSlsData,
+        );
+        Router.updateMainMenu();
+        return true;
+      },
+      () => false,
+    );
 
     // save for the autocompletion
     /* eslint-disable no-unused-vars */
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      const minions = pWheelKeyListAllData.return[0].data.return.minions;
-      Utils.setStorageItem("session", "minions", JSON.stringify(minions));
-    }, (pWheelKeyListAllMsg) => {
-      // VOID
-    });
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        const minions = pWheelKeyListAllData.return[0].data.return.minions;
+        Utils.setStorageItem("session", "minions", JSON.stringify(minions));
+      },
+      (pWheelKeyListAllMsg) => {
+        // VOID
+      },
+    );
     /* eslint-enable no-unused-vars */
 
     BeaconsMinionPanel.getAvailableBeacons(this.api);
   }
 
-  static _handleRunnerStateOrchestrateShowSls (pRunnerStateOrchestrateShowSlsData) {
+  static _handleRunnerStateOrchestrateShowSls (
+    pRunnerStateOrchestrateShowSlsData,
+  ) {
     // until we prove it it available
     Utils.setStorageItem("session", "orchestrations", "false");
 
@@ -392,7 +461,12 @@ export class LoginPanel extends Panel {
           continue;
         }
         for (const item of step) {
-          if (item === "function" || item === "state" || item === "runner" || item === "wheel") {
+          if (
+            item === "function" ||
+            item === "state" ||
+            item === "runner" ||
+            item === "wheel"
+          ) {
             Utils.setStorageItem("session", "orchestrations", "true");
             return;
           }
@@ -412,7 +486,11 @@ export class LoginPanel extends Panel {
     for (const templateName in templates) {
       const template = templates[templateName];
       if (template.key !== undefined) {
-        Utils.setStorageItem("session", "template_" + template.key, templateName);
+        Utils.setStorageItem(
+          "session",
+          "template_" + template.key,
+          templateName,
+        );
       }
     }
 
@@ -423,37 +501,76 @@ export class LoginPanel extends Panel {
     Utils.setStorageItem("session", "pages", JSON.stringify(pages));
 
     const publicPillars = wheelConfigValuesData.saltgui_public_pillars;
-    Utils.setStorageItem("session", "public_pillars", JSON.stringify(publicPillars));
+    Utils.setStorageItem(
+      "session",
+      "public_pillars",
+      JSON.stringify(publicPillars),
+    );
 
     const previewGrains = wheelConfigValuesData.saltgui_preview_grains;
-    Utils.setStorageItem("session", "preview_grains", JSON.stringify(previewGrains));
+    Utils.setStorageItem(
+      "session",
+      "preview_grains",
+      JSON.stringify(previewGrains),
+    );
 
     const ipNumberField = wheelConfigValuesData.saltgui_ipnumber_field;
     Utils.setStorageItem("session", "ipnumber_field", ipNumberField);
     const ipNumberPrefix = wheelConfigValuesData.saltgui_ipnumber_prefix;
-    Utils.setStorageItem("session", "ipnumber_prefix", JSON.stringify(ipNumberPrefix));
+    Utils.setStorageItem(
+      "session",
+      "ipnumber_prefix",
+      JSON.stringify(ipNumberPrefix),
+    );
 
     const maxShowHighstates = wheelConfigValuesData.saltgui_max_show_highstates;
-    Utils.setStorageItem("session", "max_show_highstates", JSON.stringify(maxShowHighstates));
+    Utils.setStorageItem(
+      "session",
+      "max_show_highstates",
+      JSON.stringify(maxShowHighstates),
+    );
 
-    const maxHighstateStates = wheelConfigValuesData.saltgui_max_highstate_states;
-    Utils.setStorageItem("session", "max_highstate_states", JSON.stringify(maxHighstateStates));
+    const maxHighstateStates =
+      wheelConfigValuesData.saltgui_max_highstate_states;
+    Utils.setStorageItem(
+      "session",
+      "max_highstate_states",
+      JSON.stringify(maxHighstateStates),
+    );
 
     const showSaltEnvs = wheelConfigValuesData.saltgui_show_saltenvs;
-    Utils.setStorageItem("session", "show_saltenvs", JSON.stringify(showSaltEnvs));
+    Utils.setStorageItem(
+      "session",
+      "show_saltenvs",
+      JSON.stringify(showSaltEnvs),
+    );
     const hideSaltEnvs = wheelConfigValuesData.saltgui_hide_saltenvs;
-    Utils.setStorageItem("session", "hide_saltenvs", JSON.stringify(hideSaltEnvs));
+    Utils.setStorageItem(
+      "session",
+      "hide_saltenvs",
+      JSON.stringify(hideSaltEnvs),
+    );
 
     const showJobs = wheelConfigValuesData.saltgui_show_jobs;
     Utils.setStorageItem("session", "show_jobs", JSON.stringify(showJobs));
     const hideJobs = wheelConfigValuesData.saltgui_hide_jobs;
     Utils.setStorageItem("session", "hide_jobs", JSON.stringify(hideJobs));
 
-    const useCacheForGrains = wheelConfigValuesData.saltgui_use_cache_for_grains;
-    Utils.setStorageItem("session", "use_cache_for_grains", JSON.stringify(useCacheForGrains));
+    const useCacheForGrains =
+      wheelConfigValuesData.saltgui_use_cache_for_grains;
+    Utils.setStorageItem(
+      "session",
+      "use_cache_for_grains",
+      JSON.stringify(useCacheForGrains),
+    );
 
-    const useCacheForPillar = wheelConfigValuesData.saltgui_use_cache_for_pillar;
-    Utils.setStorageItem("session", "use_cache_for_pillar", JSON.stringify(useCacheForPillar));
+    const useCacheForPillar =
+      wheelConfigValuesData.saltgui_use_cache_for_pillar;
+    Utils.setStorageItem(
+      "session",
+      "use_cache_for_pillar",
+      JSON.stringify(useCacheForPillar),
+    );
 
     const syndicMaster = wheelConfigValuesData.syndic_master;
     Utils.setStorageItem("session", "syndic_master", syndicMaster);
@@ -471,7 +588,11 @@ export class LoginPanel extends Panel {
     Utils.setStorageItem("session", "nodegroups", JSON.stringify(nodeGroups));
 
     const stateVerbose = wheelConfigValuesData.saltgui_state_verbose;
-    Utils.setStorageItem("session", "state_verbose", JSON.stringify(stateVerbose));
+    Utils.setStorageItem(
+      "session",
+      "state_verbose",
+      JSON.stringify(stateVerbose),
+    );
 
     const stateCompressIds = wheelConfigValuesData.state_compress_ids;
     Utils.setStorageItem("session", "state_compress_ids", stateCompressIds);
@@ -485,14 +606,29 @@ export class LoginPanel extends Panel {
     const outputFormats = wheelConfigValuesData.saltgui_output_formats;
     Utils.setStorageItem("session", "output_formats", outputFormats);
 
-    const dateTimeFractionDigits = wheelConfigValuesData.saltgui_datetime_fraction_digits;
-    Utils.setStorageItem("session", "datetime_fraction_digits", JSON.stringify(dateTimeFractionDigits));
+    const dateTimeFractionDigits =
+      wheelConfigValuesData.saltgui_datetime_fraction_digits;
+    Utils.setStorageItem(
+      "session",
+      "datetime_fraction_digits",
+      JSON.stringify(dateTimeFractionDigits),
+    );
 
-    const skipWheelMinionsConnected = wheelConfigValuesData.saltgui_skip_wheel_minions_connected;
-    Utils.setStorageItem("session", "skip_wheel_minions_connected", JSON.stringify(skipWheelMinionsConnected));
+    const skipWheelMinionsConnected =
+      wheelConfigValuesData.saltgui_skip_wheel_minions_connected;
+    Utils.setStorageItem(
+      "session",
+      "skip_wheel_minions_connected",
+      JSON.stringify(skipWheelMinionsConnected),
+    );
 
-    const dateTimeRepresentation = wheelConfigValuesData.saltgui_datetime_representation;
-    Utils.setStorageItem("session", "datetime_representation", dateTimeRepresentation);
+    const dateTimeRepresentation =
+      wheelConfigValuesData.saltgui_datetime_representation;
+    Utils.setStorageItem(
+      "session",
+      "datetime_representation",
+      dateTimeRepresentation,
+    );
 
     const toolTipMode = wheelConfigValuesData.saltgui_tooltip_mode;
     Utils.setStorageItem("session", "tooltip_mode", toolTipMode);
@@ -516,7 +652,13 @@ export class LoginPanel extends Panel {
     const clusterId = wheelConfigValuesData.cluster_id;
     const clusterPeers = wheelConfigValuesData.cluster_peers;
     if (id && clusterId && clusterPeers) {
-      const clusterInfo = "This is node " + id + " from cluster " + clusterId + " " + JSON.stringify(clusterPeers).replace(/"/g, "");
+      const clusterInfo =
+        "This is node " +
+        id +
+        " from cluster " +
+        clusterId +
+        " " +
+        JSON.stringify(clusterPeers).replace(/"/g, "");
       Utils.setStorageItem("session", "cluster_info", clusterInfo);
     }
 
@@ -524,25 +666,49 @@ export class LoginPanel extends Panel {
     if (!testProvidersTarget) {
       testProvidersTarget = "*";
     }
-    Utils.setStorageItem("session", "test_providers_target", testProvidersTarget);
+    Utils.setStorageItem(
+      "session",
+      "test_providers_target",
+      testProvidersTarget,
+    );
   }
 
   _onLoginFailure (error) {
     if (typeof error === "string") {
       // something detected before trying to login
-      this._showNoticeText("var(--color-notice-danger)", error, "notice_login_string_error");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        error,
+        "notice_login_string_error",
+      );
     } else if (error && error.status === 503) {
       // Service Unavailable
       // e.g. salt-api running but salt-master not running
-      this._showNoticeText("var(--color-notice-danger)", error.message, "notice_login_service_unavailable");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        error.message,
+        "notice_login_service_unavailable",
+      );
     } else if (error && error.status === -1) {
       // No permissions: login valid, but no api functions executable
       // e.g. PAM says OK and /etc/salt/master says NO
-      this._showNoticeText("var(--color-notice-danger)", error.message, "notice_login_other_error");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        error.message,
+        "notice_login_other_error",
+      );
     } else if (error.toString().startsWith("TypeError: NetworkError")) {
-      this._showNoticeText("var(--color-notice-danger)", "Network Error", "notice_login_other_error");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        "Network Error",
+        "notice_login_other_error",
+      );
     } else {
-      this._showNoticeText("var(--color-notice-danger)", "Authentication failed", "notice_auth_failed");
+      this._showNoticeText(
+        "var(--color-notice-danger)",
+        "Authentication failed",
+        "notice_auth_failed",
+      );
     }
 
     this._enableLoginControls(true);

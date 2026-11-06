@@ -1,18 +1,25 @@
 /* global */
 
-import {Character} from "./Character.js";
-import {DropDownMenu} from "./DropDown.js";
-import {Utils} from "./Utils.js";
+import { Character } from "./Character.js";
+import { DropDownMenu } from "./DropDown.js";
+import { Utils } from "./Utils.js";
 
 export class RunType {
-
   static createMenu () {
     const runblock = document.getElementById("run-block");
     RunType.menuRunType = new DropDownMenu(runblock);
     // do not show the menu title at first
     RunType.menuRunType.setTitle("");
-    RunType.menuRunType.addMenuItem("Normal", RunType._updateRunTypeText, "normal");
-    RunType.menuRunType.addMenuItem("Async", RunType._updateRunTypeText, "async");
+    RunType.menuRunType.addMenuItem(
+      "Normal",
+      RunType._updateRunTypeText,
+      "normal",
+    );
+    RunType.menuRunType.addMenuItem(
+      "Async",
+      RunType._updateRunTypeText,
+      "async",
+    );
     RunType._updateRunTypeText();
   }
 

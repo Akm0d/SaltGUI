@@ -1,12 +1,11 @@
 /* global */
 
-import {JobsSummaryPanel} from "../panels/JobsSummary.js";
-import {KeysPanel} from "../panels/Keys.js";
-import {Page} from "./Page.js";
-import {Utils} from "../Utils.js";
+import { JobsSummaryPanel } from "../panels/JobsSummary.js";
+import { KeysPanel } from "../panels/Keys.js";
+import { Page } from "./Page.js";
+import { Utils } from "../Utils.js";
 
 export class KeysPage extends Page {
-
   constructor (pRouter) {
     super("keys", "Keys", "page-keys", "button-keys", pRouter);
 

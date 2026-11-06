@@ -1,11 +1,10 @@
 /* global */
 
-import {CommandBox} from "../CommandBox.js";
-import {Router} from "../Router.js";
-import {Utils} from "../Utils.js";
+import { CommandBox } from "../CommandBox.js";
+import { Router } from "../Router.js";
+import { Utils } from "../Utils.js";
 
 export class Page {
-
   constructor (pPath, pPageName, pPageSelector, pMenuItemSelector, pRouter) {
     this.path = pPath;
     this.name = pPageName;
@@ -58,7 +57,11 @@ export class Page {
   }
 
   _handleTemplateKey (keyUpEvent) {
-    const templateName = Utils.getStorageItem("session", "template_" + keyUpEvent.key, "");
+    const templateName = Utils.getStorageItem(
+      "session",
+      "template_" + keyUpEvent.key,
+      "",
+    );
     if (templateName === "") {
       // key not bound to a template
       return false;
@@ -102,13 +105,12 @@ export class Page {
 
   /* eslint-disable class-methods-use-this */
   isVisible () {
-  /* eslint-enable class-methods-use-this */
+    /* eslint-enable class-methods-use-this */
     // a page is visible, unless the page decides otherwise
     return true;
   }
 
   static _updateMotd () {
-
     const motd = document.getElementById("motd");
 
     const motdStatus = Utils.getStorageItem("session", "motd-status", "");

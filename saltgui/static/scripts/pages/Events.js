@@ -1,10 +1,9 @@
 /* global */
 
-import {EventsPanel} from "../panels/Events.js";
-import {Page} from "./Page.js";
+import { EventsPanel } from "../panels/Events.js";
+import { Page } from "./Page.js";
 
 export class EventsPage extends Page {
-
   constructor (pRouter) {
     // don't use /events for the page, that url is reserved
     super("events", "Events", "page-events", "button-events", pRouter);

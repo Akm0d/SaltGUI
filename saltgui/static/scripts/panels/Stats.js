@@ -1,12 +1,11 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class StatsPanel extends Panel {
-
   constructor () {
     super("stats");
 
@@ -14,7 +13,7 @@ export class StatsPanel extends Panel {
     this.addHelpButton([
       "Numeric fields representing a timestamp are visible as string.",
       "Numeric fields representing a duration are visible as string.",
-      "Trivial information on worker threads may have been removed."
+      "Trivial information on worker threads may have been removed.",
     ]);
     this.addTable(["/stats"]);
     this.addMsg();
@@ -41,13 +40,16 @@ export class StatsPanel extends Panel {
   onShowNow () {
     const statsPromise = this.api.getStats();
 
-    statsPromise.then((pStatsData) => {
-      this._handleStats(pStatsData);
-      return true;
-    }, (pStatsMsg) => {
-      this._handleStats(JSON.stringify(pStatsMsg));
-      return false;
-    });
+    statsPromise.then(
+      (pStatsData) => {
+        this._handleStats(pStatsData);
+        return true;
+      },
+      (pStatsMsg) => {
+        this._handleStats(JSON.stringify(pStatsMsg));
+        return false;
+      },
+    );
   }
 
   onHide () {
@@ -69,7 +71,8 @@ export class StatsPanel extends Panel {
 
   _handleStats (pStatsData) {
     if (this.showErrorRowInstead(pStatsData)) {
-      this.statsTd.innerHTML = "<span class='text-error'>this error is typically caused by using the <tt>collect_stats: True</tt> setting in the master configuration file, which is broken in at least the recent versions of salt-api</span>";
+      this.statsTd.innerHTML =
+        "<span class='text-error'>this error is typically caused by using the <tt>collect_stats: True</tt> setting in the master configuration file, which is broken in at least the recent versions of salt-api</span>";
       window.clearInterval(this.updateStatsInterval);
       this.updateStatsInterval = null;
       return;
@@ -78,7 +81,6 @@ export class StatsPanel extends Panel {
     this.setMsg(null);
 
     for (const topKey in pStatsData) {
-
       // this section should not contain threads
       if (topKey === "CherryPy Applications") {
         continue;
@@ -92,7 +94,9 @@ export class StatsPanel extends Panel {
 
       let first = true;
       /* eslint-disable no-labels */
-      nextThread: for (const threadName of Object.keys(workerThreads).sort((aa, bb) => aa.localeCompare(bb, "en", {"numeric": true}))) {
+      nextThread: for (const threadName of Object.keys(workerThreads).sort(
+        (aa, bb) => aa.localeCompare(bb, "en", { numeric: true }),
+      )) {
         if (first) {
           // always show the first item
           // so that the structure is known even when all threads show zeroes
@@ -122,22 +126,34 @@ export class StatsPanel extends Panel {
       // this turns the fields into strings (was number)
       // we'll ignore that now
 
-      appData["Current Time"] = StatsPanel._explainDateTime(appData["Current Time"]);
+      appData["Current Time"] = StatsPanel._explainDateTime(
+        appData["Current Time"],
+      );
 
-      appData["Start Time"] = StatsPanel._explainDateTime(appData["Start Time"]);
+      appData["Start Time"] = StatsPanel._explainDateTime(
+        appData["Start Time"],
+      );
 
       appData["Uptime"] = StatsPanel._explainDateTime(appData["Uptime"]);
 
       const requests = appData["Requests"];
       for (const key in requests) {
-        requests[key]["Start Time"] = StatsPanel._explainDateTime(requests[key]["Start Time"]);
-        requests[key]["End Time"] = StatsPanel._explainDateTime(requests[key]["End Time"]);
+        requests[key]["Start Time"] = StatsPanel._explainDateTime(
+          requests[key]["Start Time"],
+        );
+        requests[key]["End Time"] = StatsPanel._explainDateTime(
+          requests[key]["End Time"],
+        );
       }
 
       const slowQueries = appData["Slow Queries"];
       for (const key in slowQueries) {
-        slowQueries[key]["Start Time"] = StatsPanel._explainDateTime(slowQueries[key]["Start Time"]);
-        slowQueries[key]["End Time"] = StatsPanel._explainDateTime(slowQueries[key]["End Time"]);
+        slowQueries[key]["Start Time"] = StatsPanel._explainDateTime(
+          slowQueries[key]["Start Time"],
+        );
+        slowQueries[key]["End Time"] = StatsPanel._explainDateTime(
+          slowQueries[key]["End Time"],
+        );
       }
     }
 

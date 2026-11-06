@@ -1,19 +1,20 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {DropDownMenu} from "../DropDown.js";
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {ParseCommandLine} from "../ParseCommandLine.js";
-import {TargetType} from "../TargetType.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { ParseCommandLine } from "../ParseCommandLine.js";
+import { TargetType } from "../TargetType.js";
+import { Utils } from "../Utils.js";
 
 export class JobPanel extends Panel {
-
   constructor () {
     super("job");
 
-    this.addTitle(Character.HORIZONTAL_ELLIPSIS + " on " + Character.HORIZONTAL_ELLIPSIS);
+    this.addTitle(
+      Character.HORIZONTAL_ELLIPSIS + " on " + Character.HORIZONTAL_ELLIPSIS,
+    );
     if (Utils.getQueryParam("popup") !== "true") {
       this.addCloseButton();
     }
@@ -52,7 +53,11 @@ export class JobPanel extends Panel {
     const output = Utils.createElem("pre", "output", "", "job-table");
     this.output = output;
 
-    const searchBox = Utils.makeSearchBox(this.searchButton, this.output, "data-list-job");
+    const searchBox = Utils.makeSearchBox(
+      this.searchButton,
+      this.output,
+      "data-list-job",
+    );
     this.div.appendChild(searchBox);
 
     this.div.append(this.output);
@@ -93,24 +98,41 @@ export class JobPanel extends Panel {
     const runnerJobsListJobPromise = this.api.getRunnerJobsListJob(jobId);
     const runnerJobsActivePromise = this.api.getRunnerJobsActive();
 
-    runnerJobsListJobPromise.then((pRunnerJobsListJobData) => {
-      this._handleJobRunnerJobsListJob(pRunnerJobsListJobData, jobId, minionId);
-      runnerJobsActivePromise.then((pRunnerJobsActiveData) => {
-        this._handleRunnerJobsActive(jobId, pRunnerJobsActiveData);
-        this._scheduleRefreshJob();
+    runnerJobsListJobPromise.then(
+      (pRunnerJobsListJobData) => {
+        this._handleJobRunnerJobsListJob(
+          pRunnerJobsListJobData,
+          jobId,
+          minionId,
+        );
+        runnerJobsActivePromise.then(
+          (pRunnerJobsActiveData) => {
+            this._handleRunnerJobsActive(jobId, pRunnerJobsActiveData);
+            this._scheduleRefreshJob();
+            return true;
+          },
+          (pRunnerJobsActiveMsg) => {
+            this._handleRunnerJobsActive(
+              jobId,
+              JSON.stringify(pRunnerJobsActiveMsg),
+            );
+            this.setPlayPauseButton("none");
+            return false;
+          },
+        );
         return true;
-      }, (pRunnerJobsActiveMsg) => {
-        this._handleRunnerJobsActive(jobId, JSON.stringify(pRunnerJobsActiveMsg));
+      },
+      (pRunnerJobsListJobsMsg) => {
+        this._handleJobRunnerJobsListJob(
+          JSON.stringify(pRunnerJobsListJobsMsg),
+          jobId,
+          undefined,
+        );
+        Utils.ignorePromise(runnerJobsActivePromise);
         this.setPlayPauseButton("none");
         return false;
-      });
-      return true;
-    }, (pRunnerJobsListJobsMsg) => {
-      this._handleJobRunnerJobsListJob(JSON.stringify(pRunnerJobsListJobsMsg), jobId, undefined);
-      Utils.ignorePromise(runnerJobsActivePromise);
-      this.setPlayPauseButton("none");
-      return false;
-    });
+      },
+    );
 
     let jobRefresh = Utils.getStorageItem("local", "jobrefresh", "pause");
     if (jobRefresh !== "play" && jobRefresh !== "pause") {
@@ -154,7 +176,6 @@ export class JobPanel extends Panel {
   }
 
   static decodeArgumentsArray (rawArguments, dictsAreKwArgs = false) {
-
     if (rawArguments === undefined) {
       // no arguments
       return "";
@@ -177,7 +198,11 @@ export class JobPanel extends Panel {
       // all KWARGS are one entry in the parameters array
       // not all dicts have __kwarg__ to recognize them
       // in that case, the caller must decide
-      if (obj && typeof obj === "object" && (dictsAreKwArgs || "__kwarg__" in obj)) {
+      if (
+        obj &&
+        typeof obj === "object" &&
+        (dictsAreKwArgs || "__kwarg__" in obj)
+      ) {
         const keys = Object.keys(obj).sort();
         for (const key of keys) {
           if (key === "__kwarg__") {
@@ -204,7 +229,11 @@ export class JobPanel extends Panel {
 
     if (typeof pRunnerJobsListJobData !== "object") {
       this.output.innerText = "";
-      Utils.addErrorToTableCell(this.output, pRunnerJobsListJobData, "bottom-left");
+      Utils.addErrorToTableCell(
+        this.output,
+        pRunnerJobsListJobData,
+        "bottom-left",
+      );
       this.updateTitle("ERROR");
       return;
     }
@@ -231,7 +260,10 @@ export class JobPanel extends Panel {
     if (!argumentsText && info.Function.startsWith("runner.")) {
       // runners keep the given arguments elsewhere
       const fakeMinion = Object.keys(info.Result)[0];
-      argumentsText = JobPanel.decodeArgumentsArray(info.Result[fakeMinion].return.fun_args, true);
+      argumentsText = JobPanel.decodeArgumentsArray(
+        info.Result[fakeMinion].return.fun_args,
+        true,
+      );
     }
 
     this.targettype = info["Target-type"];
@@ -243,7 +275,8 @@ export class JobPanel extends Panel {
     // runner commands are sometimes "runner." and sometimes "runners.".
     // it is a big mismatch between documentation and system.
     // we just compensate for that everywhere.
-    this.commandtext = info.Function.replace(/^runner[.]/, "runners.") + argumentsText;
+    this.commandtext =
+      info.Function.replace(/^runner[.]/, "runners.") + argumentsText;
     this.jobid = pJobId;
     this.minions = info.Minions;
     this.result = info.Result;
@@ -260,7 +293,9 @@ export class JobPanel extends Panel {
       // prevent title becoming too wide
       // save info for display in actual output box
       extraInfo.push(this.commandtext);
-      argumentsText = argumentsText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
+      argumentsText =
+        argumentsText.substring(0, maxTextLength) +
+        Character.HORIZONTAL_ELLIPSIS;
     }
 
     let targetText = "on " + TargetType.makeTargetText(info);
@@ -268,7 +303,8 @@ export class JobPanel extends Panel {
       // prevent title becoming too wide
       // save info for display in actual output box
       extraInfo.push(targetText);
-      targetText = targetText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
+      targetText =
+        targetText.substring(0, maxTextLength) + Character.HORIZONTAL_ELLIPSIS;
     }
 
     this.updateTitle(info.Function + argumentsText + " " + targetText);
@@ -288,13 +324,22 @@ export class JobPanel extends Panel {
       } else {
         minions = ["RUNNER"];
       }
-      this.setWarningText("info", "RUNNER jobs are not associated with minions");
+      this.setWarningText(
+        "info",
+        "RUNNER jobs are not associated with minions",
+      );
     } else {
       minions = Object.keys(this.result);
-      this.setWarningText("warn", "minion list is missing in the result, thus cannot determine missing output");
+      this.setWarningText(
+        "warn",
+        "minion list is missing in the result, thus cannot determine missing output",
+      );
     }
     let initialStatus;
-    if (info.Minions === undefined || Object.keys(info.Result).length >= info.Minions.length) {
+    if (
+      info.Minions === undefined ||
+      Object.keys(info.Result).length >= info.Minions.length
+    ) {
       // we have all the results
       // that means we are done
       // don't wait for RunnerJobsActive to also tell us that we are done
@@ -305,7 +350,16 @@ export class JobPanel extends Panel {
       initialStatus = "(loading)";
       this.jobIsTerminated = false;
     }
-    Output.addResponseOutput(this.output, pJobId, minions, info.Result, info.Function, initialStatus, pMinionId, extraInfo);
+    Output.addResponseOutput(
+      this.output,
+      pJobId,
+      minions,
+      info.Result,
+      info.Function,
+      initialStatus,
+      pMinionId,
+      extraInfo,
+    );
 
     // replace any jobid
     // Don't do this with output.innerHTML as there are already
@@ -327,7 +381,7 @@ export class JobPanel extends Panel {
         Utils.addToolTip(link, "this job");
       } else {
         link.addEventListener("click", (pClickEvent) => {
-          this.router.goTo("job", {"id": linkToJid}, undefined, pClickEvent);
+          this.router.goTo("job", { id: linkToJid }, undefined, pClickEvent);
           pClickEvent.stopPropagation();
         });
       }
@@ -342,14 +396,17 @@ export class JobPanel extends Panel {
   }
 
   _addPanelMenuItemJobRerunJob () {
-    this.panelMenu.addMenuItem(() => {
-      if (!this.target && !this.commandtext) {
-        return null;
-      }
-      return "Re-run job...";
-    }, () => {
-      this.runCommand(this.targettype, this.target, this.commandtext);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (!this.target && !this.commandtext) {
+          return null;
+        }
+        return "Re-run job...";
+      },
+      () => {
+        this.runCommand(this.targettype, this.target, this.commandtext);
+      },
+    );
   }
 
   _listForRerunJobOnAllMinions () {
@@ -376,16 +433,19 @@ export class JobPanel extends Panel {
   }
 
   _addPanelMenuItemRerunJobOnAllMinionsWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      const lst = this._listForRerunJobOnAllMinions();
-      if (!lst) {
-        return null;
-      }
-      return "Re-run job on all minions...";
-    }, () => {
-      const lst = this._listForRerunJobOnAllMinions();
-      this.runCommand("list", lst, this.commandtext);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        const lst = this._listForRerunJobOnAllMinions();
+        if (!lst) {
+          return null;
+        }
+        return "Re-run job on all minions...";
+      },
+      () => {
+        const lst = this._listForRerunJobOnAllMinions();
+        this.runCommand("list", lst, this.commandtext);
+      },
+    );
   }
 
   _listForRerunJobOnUnsuccessfulMinions () {
@@ -400,10 +460,16 @@ export class JobPanel extends Panel {
       if (!(minionId in this.result)) {
         has1 = true;
       }
-      if (minionId in this.result && !JobPanel._isResultOk(this.result[minionId])) {
+      if (
+        minionId in this.result &&
+        !JobPanel._isResultOk(this.result[minionId])
+      ) {
         has2 = true;
       }
-      if (!(minionId in this.result) || !JobPanel._isResultOk(this.result[minionId])) {
+      if (
+        !(minionId in this.result) ||
+        !JobPanel._isResultOk(this.result[minionId])
+      ) {
         minionList += "," + minionId;
       }
     }
@@ -423,16 +489,19 @@ export class JobPanel extends Panel {
   }
 
   _addPanelMenuItemRerunJobOnUnsuccessfulMinionsWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      const lst = this._listForRerunJobOnUnsuccessfulMinions();
-      if (!lst) {
-        return null;
-      }
-      return "Re-run job on unsuccessful minions...";
-    }, () => {
-      const lst = this._listForRerunJobOnUnsuccessfulMinions();
-      this.runCommand("list", lst, this.commandtext);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        const lst = this._listForRerunJobOnUnsuccessfulMinions();
+        if (!lst) {
+          return null;
+        }
+        return "Re-run job on unsuccessful minions...";
+      },
+      () => {
+        const lst = this._listForRerunJobOnUnsuccessfulMinions();
+        this.runCommand("list", lst, this.commandtext);
+      },
+    );
   }
 
   _listForRerunJobOnFailedMinions () {
@@ -442,7 +511,10 @@ export class JobPanel extends Panel {
 
     let minionList = "";
     for (const minionId of this.minions) {
-      if (minionId in this.result && !JobPanel._isResultOk(this.result[minionId])) {
+      if (
+        minionId in this.result &&
+        !JobPanel._isResultOk(this.result[minionId])
+      ) {
         minionList += "," + minionId;
       }
     }
@@ -456,16 +528,19 @@ export class JobPanel extends Panel {
   }
 
   _addPanelMenuItemRerunJobOnFailedMinionsWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      const lst = this._listForRerunJobOnFailedMinions();
-      if (!lst) {
-        return null;
-      }
-      return "Re-run job on failed minions...";
-    }, () => {
-      const lst = this._listForRerunJobOnFailedMinions();
-      this.runCommand("list", lst, this.commandtext);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        const lst = this._listForRerunJobOnFailedMinions();
+        if (!lst) {
+          return null;
+        }
+        return "Re-run job on failed minions...";
+      },
+      () => {
+        const lst = this._listForRerunJobOnFailedMinions();
+        this.runCommand("list", lst, this.commandtext);
+      },
+    );
   }
 
   _listForRerunJobOnNonRespondingMinions () {
@@ -489,56 +564,75 @@ export class JobPanel extends Panel {
   }
 
   _addPanelMenuItemRerunJobOnNonRespondingMinionsWhenNeeded () {
-    this.panelMenu.addMenuItem(() => {
-      const lst = this._listForRerunJobOnNonRespondingMinions();
-      if (!lst) {
-        return null;
-      }
-      return "Re-run job on non responding minions...";
-    }, () => {
-      const lst = this._listForRerunJobOnNonRespondingMinions();
-      this.runCommand("list", lst, this.commandtext);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        const lst = this._listForRerunJobOnNonRespondingMinions();
+        if (!lst) {
+          return null;
+        }
+        return "Re-run job on non responding minions...";
+      },
+      () => {
+        const lst = this._listForRerunJobOnNonRespondingMinions();
+        this.runCommand("list", lst, this.commandtext);
+      },
+    );
   }
 
   _addPanelMenuItemTerminateJob () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.jobIsTerminated !== false) {
-        return null;
-      }
-      return "Terminate job...";
-    }, () => {
-      const cmdArr = ["saltutil.term_job", this.jobid];
-      this.runCommand(this.targettype, this.target, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.jobIsTerminated !== false) {
+          return null;
+        }
+        return "Terminate job...";
+      },
+      () => {
+        const cmdArr = ["saltutil.term_job", this.jobid];
+        this.runCommand(this.targettype, this.target, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemKillJob () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.jobIsTerminated !== false) {
-        return null;
-      }
-      return "Kill job...";
-    }, () => {
-      const cmdArr = ["saltutil.kill_job", this.jobid];
-      this.runCommand(this.targettype, this.target, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.jobIsTerminated !== false) {
+          return null;
+        }
+        return "Kill job...";
+      },
+      () => {
+        const cmdArr = ["saltutil.kill_job", this.jobid];
+        this.runCommand(this.targettype, this.target, cmdArr);
+      },
+    );
   }
 
   _addPanelMenuItemSignalJob () {
-    this.panelMenu.addMenuItem(() => {
-      if (this.jobIsTerminated !== false) {
-        return null;
-      }
-      return "Signal job...";
-    }, () => {
-      const cmdArr = ["saltutil.signal_job", this.jobid, "signal=", "<signalnumber>"];
-      this.runCommand(this.targettype, this.target, cmdArr);
-    });
+    this.panelMenu.addMenuItem(
+      () => {
+        if (this.jobIsTerminated !== false) {
+          return null;
+        }
+        return "Signal job...";
+      },
+      () => {
+        const cmdArr = [
+          "saltutil.signal_job",
+          this.jobid,
+          "signal=",
+          "<signalnumber>",
+        ];
+        this.runCommand(this.targettype, this.target, cmdArr);
+      },
+    );
   }
 
   _handleRunnerJobsActive (pJobId, pData) {
-    const summaryJobsActiveSpan = document.getElementById("summary-jobs-active");
+    const summaryJobsActiveSpan = document.getElementById(
+      "summary-jobs-active",
+    );
     if (!summaryJobsActiveSpan) {
       return;
     }
@@ -562,7 +656,10 @@ export class JobPanel extends Panel {
     this.jobIsTerminated = false;
 
     summaryJobsActiveSpan.innerText = info.Running.length + " active";
-    summaryJobsActiveSpan.insertBefore(Utils.createJobStatusSpan(pJobId, true), summaryJobsActiveSpan.firstChild);
+    summaryJobsActiveSpan.insertBefore(
+      Utils.createJobStatusSpan(pJobId, true),
+      summaryJobsActiveSpan.firstChild,
+    );
     summaryJobsActiveSpan.addEventListener("click", (pClickEvent) => {
       this.output.innerText = "loading" + Character.HORIZONTAL_ELLIPSIS;
       this.onShow();
@@ -577,7 +674,11 @@ export class JobPanel extends Panel {
       // each minionInfo is like {'minion': pid}
       for (const minionId in minionInfo) {
         const pid = minionInfo[minionId];
-        const noResponseSpan = this.div.querySelector("pre.output div#" + Utils.getIdFromMinionId(minionId) + " span.noresponse");
+        const noResponseSpan = this.div.querySelector(
+          "pre.output div#" +
+            Utils.getIdFromMinionId(minionId) +
+            " span.noresponse",
+        );
         if (!noResponseSpan) {
           continue;
         }
@@ -610,7 +711,6 @@ export class JobPanel extends Panel {
   }
 
   handleSaltJobRetEvent (pData) {
-
     // ignore the most common events until someone complains
     if (pData.fun === "saltutil.find_job") {
       return;

@@ -1,16 +1,15 @@
 /* global */
 
-import {BeaconsIssues} from "../issues/Beacons.js";
-import {JobsRunningIssues} from "../issues/JobsRunning.js";
-import {KeysIssues} from "../issues/Keys.js";
-import {NotConnectedIssues} from "../issues/NotConnected.js";
-import {Panel} from "./Panel.js";
-import {SchedulesIssues} from "../issues/Schedules.js";
-import {StateIssues} from "../issues/State.js";
-import {Utils} from "../Utils.js";
+import { BeaconsIssues } from "../issues/Beacons.js";
+import { JobsRunningIssues } from "../issues/JobsRunning.js";
+import { KeysIssues } from "../issues/Keys.js";
+import { NotConnectedIssues } from "../issues/NotConnected.js";
+import { Panel } from "./Panel.js";
+import { SchedulesIssues } from "../issues/Schedules.js";
+import { StateIssues } from "../issues/State.js";
+import { Utils } from "../Utils.js";
 
 export class IssuesPanel extends Panel {
-
   constructor () {
     super("issues");
 
@@ -19,7 +18,7 @@ export class IssuesPanel extends Panel {
     this.addPlayPauseButton();
     this.addHelpButton([
       "This page contains an overview of problems",
-      "that are observed in various categories."
+      "that are observed in various categories.",
     ]);
     this.addTable(["-menu-", "Description"]);
     this.setTableClickable("cmd");
@@ -59,12 +58,15 @@ export class IssuesPanel extends Panel {
     /* Promise.all is not supported in op_mini all, IE 11 */
     const allPromise = Promise.all([p1, p2, p3, p4, p5, p6]);
     /* eslint-enable compat/compat */
-    allPromise.then(() => {
-      // VOID
-    }, (pErrorMsg) => {
-      this.setMsg("(error)");
-      Utils.addToolTip(this.msgDiv, pErrorMsg);
-    });
+    allPromise.then(
+      () => {
+        // VOID
+      },
+      (pErrorMsg) => {
+        this.setMsg("(error)");
+        Utils.addToolTip(this.msgDiv, pErrorMsg);
+      },
+    );
   }
 
   onHide () {

@@ -1,36 +1,37 @@
 /* global config */
 
-import {API} from "./Api.js";
-import {BeaconsMinionPage} from "./pages/BeaconsMinion.js";
-import {BeaconsPage} from "./pages/Beacons.js";
-import {Character} from "./Character.js";
-import {CommandBox} from "./CommandBox.js";
-import {EventsPage} from "./pages/Events.js";
-import {GrainsMinionPage} from "./pages/GrainsMinion.js";
-import {GrainsPage} from "./pages/Grains.js";
-import {HighStatePage} from "./pages/HighState.js";
-import {IssuesPage} from "./pages/Issues.js";
-import {JobPage} from "./pages/Job.js";
-import {JobsPage} from "./pages/Jobs.js";
-import {KeysPage} from "./pages/Keys.js";
-import {LoginPage} from "./pages/Login.js";
-import {LogoutPage} from "./pages/Logout.js";
-import {MinionsPage} from "./pages/Minions.js";
-import {NodegroupsPage} from "./pages/Nodegroups.js";
-import {OptionsPage} from "./pages/Options.js";
-import {OrchestrationsPage} from "./pages/Orchestrations.js";
-import {Output} from "./output/Output.js";
-import {PillarsMinionPage} from "./pages/PillarsMinion.js";
-import {PillarsPage} from "./pages/Pillars.js";
-import {ReactorsPage} from "./pages/Reactors.js";
-import {SchedulesMinionPage} from "./pages/SchedulesMinion.js";
-import {SchedulesPage} from "./pages/Schedules.js";
-import {TemplatesPage} from "./pages/Templates.js";
-import {Utils} from "./Utils.js";
+import { API } from "./Api.js";
+import { BeaconsMinionPage } from "./pages/BeaconsMinion.js";
+import { BeaconsPage } from "./pages/Beacons.js";
+import { Character } from "./Character.js";
+import { CommandBox } from "./CommandBox.js";
+import { EventsPage } from "./pages/Events.js";
+import { GrainsMinionPage } from "./pages/GrainsMinion.js";
+import { GrainsPage } from "./pages/Grains.js";
+import { HighStatePage } from "./pages/HighState.js";
+import { IssuesPage } from "./pages/Issues.js";
+import { JobPage } from "./pages/Job.js";
+import { JobsPage } from "./pages/Jobs.js";
+import { KeysPage } from "./pages/Keys.js";
+import { LoginPage } from "./pages/Login.js";
+import { LogoutPage } from "./pages/Logout.js";
+import { MinionsPage } from "./pages/Minions.js";
+import { NodegroupsPage } from "./pages/Nodegroups.js";
+import { OptionsPage } from "./pages/Options.js";
+import { OrchestrationsPage } from "./pages/Orchestrations.js";
+import { Output } from "./output/Output.js";
+import { PillarsMinionPage } from "./pages/PillarsMinion.js";
+import { PillarsPage } from "./pages/Pillars.js";
+import { ReactorsPage } from "./pages/Reactors.js";
+import { SchedulesMinionPage } from "./pages/SchedulesMinion.js";
+import { SchedulesPage } from "./pages/Schedules.js";
+import { TemplatesPage } from "./pages/Templates.js";
+import { Utils } from "./Utils.js";
+import { MinionRegistry } from "./MinionRegistry.js";
 
 export class Router {
-
   constructor () {
+    this.minionRegistry = new MinionRegistry();
     Character.init();
 
     this.api = new API();
@@ -46,11 +47,17 @@ export class Router {
     this._registerPage(Router.grainsPage = new GrainsPage(this));
     this._registerPage(Router.grainsMinionPage = new GrainsMinionPage(this));
     this._registerPage(Router.schedulesPage = new SchedulesPage(this));
-    this._registerPage(Router.schedulesMinionPage = new SchedulesMinionPage(this));
+    this._registerPage(
+      Router.schedulesMinionPage = new SchedulesMinionPage(this),
+    );
     this._registerPage(Router.pillarsPage = new PillarsPage(this));
-    this._registerPage(Router.pillarsMinionPage = new PillarsMinionPage(this));
+    this._registerPage(
+      Router.pillarsMinionPage = new PillarsMinionPage(this),
+    );
     this._registerPage(Router.beaconsPage = new BeaconsPage(this));
-    this._registerPage(Router.beaconsMinionPage = new BeaconsMinionPage(this));
+    this._registerPage(
+      Router.beaconsMinionPage = new BeaconsMinionPage(this),
+    );
     this._registerPage(Router.nodegroupsPage = new NodegroupsPage(this));
     this._registerPage(Router.jobPage = new JobPage(this));
     this._registerPage(Router.jobsPage = new JobsPage(this));
@@ -58,7 +65,9 @@ export class Router {
     this._registerPage(Router.templatesPage = new TemplatesPage(this));
     this._registerPage(Router.eventsPage = new EventsPage(this));
     this._registerPage(Router.reactorsPage = new ReactorsPage(this));
-    this._registerPage(Router.orchestrationsPage = new OrchestrationsPage(this));
+    this._registerPage(
+      Router.orchestrationsPage = new OrchestrationsPage(this),
+    );
     this._registerPage(Router.optionsPage = new OptionsPage(this));
     this._registerPage(Router.issuesPage = new IssuesPage(this));
     this._registerPage(Router.logoutPage = new LogoutPage(this));
@@ -89,7 +98,6 @@ export class Router {
   }
 
   _registerMenuItem (pParentId, pButtonId, pUrl, pKey) {
-
     // shortcut
 
     if (pKey) {
@@ -108,19 +116,33 @@ export class Router {
     }
 
     if (pParentId) {
-      let dropdownContent = document.getElementById("dropdown-content-" + pParentId);
+      let dropdownContent = document.getElementById(
+        "dropdown-content-" + pParentId,
+      );
       if (!dropdownContent) {
-        dropdownContent = Utils.createDiv("dropdown-content", "", "dropdown-content-" + pParentId);
+        dropdownContent = Utils.createDiv(
+          "dropdown-content",
+          "",
+          "dropdown-content-" + pParentId,
+        );
         dropDownDiv.append(dropdownContent);
       }
-      const itemDiv = Utils.createDiv("run-command-button menu-item", pButtonId, "button-" + pButtonId + "1");
+      const itemDiv = Utils.createDiv(
+        "run-command-button menu-item",
+        pButtonId,
+        "button-" + pButtonId + "1",
+      );
       if (pKey) {
         // currently applies to all, but just in case
         itemDiv.classList.add("menu-item-first-letter");
       }
       dropdownContent.append(itemDiv);
     } else {
-      const topItemDiv = Utils.createDiv("menu-item", pButtonId, "button-" + pButtonId + "1");
+      const topItemDiv = Utils.createDiv(
+        "menu-item",
+        pButtonId,
+        "button-" + pButtonId + "1",
+      );
       dropDownDiv.append(topItemDiv);
       if (pKey) {
         topItemDiv.classList.add("menu-item-first-letter");
@@ -131,7 +153,11 @@ export class Router {
 
     const miniMenuDiv = document.querySelector(".minimenu");
     const dropdownContent2 = miniMenuDiv.querySelector(".dropdown-content");
-    const menuItemDiv = Utils.createDiv("run-command-button menu-item", pButtonId, "button-" + pButtonId + "2");
+    const menuItemDiv = Utils.createDiv(
+      "run-command-button menu-item",
+      pButtonId,
+      "button-" + pButtonId + "2",
+    );
     if (pParentId) {
       menuItemDiv.style.paddingLeft = "50px";
     }
@@ -145,11 +171,17 @@ export class Router {
     // conditions go inside the handler because the pages
     // data may still being retrieved at this point
     for (const nr of ["1", "2"]) {
-      document.getElementById("button-" + pButtonId + nr).
-        addEventListener("click", (pClickEvent) => {
+      document
+        .getElementById("button-" + pButtonId + nr)
+        .addEventListener("click", (pClickEvent) => {
           const pages = Router._getPagesList();
           // Arrays.includes() is only available from ES7/2016
-          if (pUrl && (pButtonId === "logout" || pages.length === 0 || pages.indexOf(pButtonId) >= 0)) {
+          if (
+            pUrl &&
+            (pButtonId === "logout" ||
+              pages.length === 0 ||
+              pages.indexOf(pButtonId) >= 0)
+          ) {
             this.goTo(pUrl);
           }
           // hide the menu, it will stay hidden when the mouse is not over it
@@ -174,28 +206,27 @@ export class Router {
   }
 
   _registerRouterEventListeners () {
-    document.getElementById("logo").
-      addEventListener("click", (pClickEvent) => {
-        if (pClickEvent.ctrlKey || pClickEvent.altKey) {
-          this.goTo("options");
-        } else {
-          this.goTo("");
-        }
-        pClickEvent.stopPropagation();
-      });
+    document.getElementById("logo").addEventListener("click", (pClickEvent) => {
+      if (pClickEvent.ctrlKey || pClickEvent.altKey) {
+        this.goTo("options");
+      } else {
+        this.goTo("");
+      }
+      pClickEvent.stopPropagation();
+    });
 
     // for touch screens
-    document.getElementById("logo").
-      addEventListener("dblclick", (pClickEvent) => {
+    document
+      .getElementById("logo")
+      .addEventListener("dblclick", (pClickEvent) => {
         this.goTo("options");
         pClickEvent.stopPropagation();
       });
 
-    document.getElementById("docu").
-      addEventListener("click", (pClickEvent) => {
-        window.open("https://erwindon.github.io/SaltGUI/", "_blank");
-        pClickEvent.stopPropagation();
-      });
+    document.getElementById("docu").addEventListener("click", (pClickEvent) => {
+      window.open("https://erwindon.github.io/SaltGUI/", "_blank");
+      pClickEvent.stopPropagation();
+    });
 
     addEventListener("popstate", (popstate) => {
       const hash = popstate.target.location.hash.replace(/^#/, "");
@@ -234,7 +265,10 @@ export class Router {
 
   static _getPagesList () {
     const pages = Utils.getStorageItemObject("session", "pages");
-    const userName = Utils.getStorageItemObject("session", "login_response").user;
+    const userName = Utils.getStorageItemObject(
+      "session",
+      "login_response",
+    ).user;
     if (!userName || typeof pages !== "object" || !(userName in pages)) {
       return [];
     }
@@ -295,7 +329,9 @@ export class Router {
 
   static _cancelSelections () {
     // see https://stackoverflow.com/questions/3169786/clear-text-selection-with-javascript
-    const sel = window.getSelection ? window.getSelection() : document.selection;
+    const sel = window.getSelection
+      ? window.getSelection()
+      : document.selection;
     if (sel) {
       if (sel.removeAllRanges) {
         sel.removeAllRanges();
@@ -308,14 +344,24 @@ export class Router {
   static updateMainMenu () {
     const pages = Router._getPagesList();
 
-    Router._showMenuItem(pages, Router.minionsPage, ["grains", "schedules", "pillars", "beacons", "nodegroups"]);
+    Router._showMenuItem(pages, Router.minionsPage, [
+      "grains",
+      "schedules",
+      "pillars",
+      "beacons",
+      "nodegroups",
+    ]);
     Router._showMenuItem(pages, Router.grainsPage);
     Router._showMenuItem(pages, Router.schedulesPage);
     Router._showMenuItem(pages, Router.pillarsPage);
     Router._showMenuItem(pages, Router.beaconsPage);
     Router._showMenuItem(pages, Router.nodegroupsPage);
     Router._showMenuItem(pages, Router.keysPage);
-    Router._showMenuItem(pages, Router.jobsPage, ["highstate", "orchestrations", "templates"]);
+    Router._showMenuItem(pages, Router.jobsPage, [
+      "highstate",
+      "orchestrations",
+      "templates",
+    ]);
     Router._showMenuItem(pages, Router.highStatePage);
     Router._showMenuItem(pages, Router.orchestrationsPage);
     Router._showMenuItem(pages, Router.templatesPage);
@@ -329,11 +375,13 @@ export class Router {
   // pForward = 1 --> back navigation using regular gui
   // pForward = 2 --> back navigation using browser
   goTo (pHash, pQuery = {}, pForward = 0, pEvent = null) {
-
     // close the command-box when it is stil open
     CommandBox.hideManualRun();
 
-    if (pHash !== "login" && Utils.getStorageItem("session", "login_response") === null) {
+    if (
+      pHash !== "login" &&
+      Utils.getStorageItem("session", "login_response") === null
+    ) {
       // the fact that we don't have a session will be caught later
       // but this was shows less error messages on the console
       // but do not destroy the reason when login is already the goal
@@ -433,7 +481,9 @@ export class Router {
     pPage.pageElement.style.display = "";
 
     // de-activate all menu items
-    const activeMenuItems = Array.from(document.querySelectorAll(".menu-item-active"));
+    const activeMenuItems = Array.from(
+      document.querySelectorAll(".menu-item-active"),
+    );
     activeMenuItems.forEach((menuItem) => {
       menuItem.classList.remove("menu-item-active");
     });

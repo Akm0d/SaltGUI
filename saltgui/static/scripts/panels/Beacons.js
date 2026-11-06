@@ -1,10 +1,9 @@
 /* global */
 
-import {Panel} from "./Panel.js";
-import {Utils} from "../Utils.js";
+import { Panel } from "./Panel.js";
+import { Utils } from "../Utils.js";
 
 export class BeaconsPanel extends Panel {
-
   constructor () {
     super("beacons");
 
@@ -21,27 +20,40 @@ export class BeaconsPanel extends Panel {
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
     const localBeaconsListPromise = this.api.getLocalBeaconsList(null);
 
-    const selectVisible = Utils.getStorageItemBoolean("session", "select_visible", false);
+    const selectVisible = Utils.getStorageItemBoolean(
+      "session",
+      "select_visible",
+      false,
+    );
     this.showSelectColumn(selectVisible);
 
     this.nrMinions = 0;
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      this._handleBeaconsWheelKeyListAll(pWheelKeyListAllData);
-      localBeaconsListPromise.then((pLocalBeaconsListData) => {
-        this.updateMinions(pLocalBeaconsListData);
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        this._handleBeaconsWheelKeyListAll(pWheelKeyListAllData);
+        localBeaconsListPromise.then(
+          (pLocalBeaconsListData) => {
+            this.updateMinions(pLocalBeaconsListData);
+            return true;
+          },
+          (pLocalBeaconsListMsg) => {
+            const allMinionsErr = Utils.msgPerMinion(
+              pWheelKeyListAllData.return[0].data.return.minions,
+              JSON.stringify(pLocalBeaconsListMsg),
+            );
+            this.updateMinions({ return: [allMinionsErr] });
+            return false;
+          },
+        );
         return true;
-      }, (pLocalBeaconsListMsg) => {
-        const allMinionsErr = Utils.msgPerMinion(pWheelKeyListAllData.return[0].data.return.minions, JSON.stringify(pLocalBeaconsListMsg));
-        this.updateMinions({"return": [allMinionsErr]});
+      },
+      (pWheelKeyListAllMsg) => {
+        this._handleBeaconsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
+        Utils.ignorePromise(localBeaconsListPromise);
         return false;
-      });
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      this._handleBeaconsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
-      Utils.ignorePromise(localBeaconsListPromise);
-      return false;
-    });
+      },
+    );
   }
 
   static fixBeaconsMinion (pData) {
@@ -53,11 +65,14 @@ export class BeaconsPanel extends Panel {
     // where each object has one key
     // re-create as a normal object
 
-    const ret = {"beacons": {}, "enabled": true};
+    const ret = { beacons: {}, enabled: true };
 
     for (const beaconName in pData) {
       // correct for empty list that returns this dummy value
-      if (beaconName === "beacons" && JSON.stringify(pData[beaconName]) === "{}") {
+      if (
+        beaconName === "beacons" &&
+        JSON.stringify(pData[beaconName]) === "{}"
+      ) {
         continue;
       }
 
@@ -99,7 +114,12 @@ export class BeaconsPanel extends Panel {
       this._addMenuItemShowBeacons(minionTr.dropdownmenu, minionId);
 
       minionTr.addEventListener("click", (pClickEvent) => {
-        this.router.goTo("beacons-minion", {"minionid": minionId}, undefined, pClickEvent);
+        this.router.goTo(
+          "beacons-minion",
+          { minionid: minionId },
+          undefined,
+          pClickEvent,
+        );
         pClickEvent.stopPropagation();
       });
     }
@@ -110,24 +130,31 @@ export class BeaconsPanel extends Panel {
   updateOfflineMinion (pMinionId, pMinionsDict) {
     super.updateOfflineMinion(pMinionId, pMinionsDict, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     // force same columns on all rows
     minionTr.appendChild(Utils.createTd("beaconinfo"));
   }
 
   updateMinion (pMinionData, pMinionId, pAllMinionsGrains) {
-
     pMinionData = BeaconsPanel.fixBeaconsMinion(pMinionData);
 
     super.updateMinion(null, pMinionId, pAllMinionsGrains, true);
 
-    const minionTr = this.table.querySelector("#" + Utils.getIdFromMinionId(pMinionId));
+    const minionTr = this.table.querySelector(
+      "#" + Utils.getIdFromMinionId(pMinionId),
+    );
 
     if (typeof pMinionData === "object") {
       const cnt = Object.keys(pMinionData.beacons).length;
-      let beaconInfoText = Utils.txtZeroOneMany(cnt,
-        "no beacons", "{0} beacon", "{0} beacons");
+      let beaconInfoText = Utils.txtZeroOneMany(
+        cnt,
+        "no beacons",
+        "{0} beacon",
+        "{0} beacons",
+      );
       if (!pMinionData.enabled) {
         beaconInfoText += " (disabled)";
       }
@@ -145,7 +172,12 @@ export class BeaconsPanel extends Panel {
 
   _addMenuItemShowBeacons (pMenu, pMinionId) {
     pMenu.addMenuItem("Show beacons", (pClickEvent) => {
-      this.router.goTo("beacons-minion", {"minionid": pMinionId}, undefined, pClickEvent);
+      this.router.goTo(
+        "beacons-minion",
+        { minionid: pMinionId },
+        undefined,
+        pClickEvent,
+      );
     });
   }
 }

@@ -1,10 +1,9 @@
 import { Hilitor } from "../hilitor/hilitor.js";
 
-import {Character} from "./Character.js";
-import {DropDownMenu} from "./DropDown.js";
+import { Character } from "./Character.js";
+import { DropDownMenu } from "./DropDown.js";
 
 export class Utils {
-
   // functions for URL parameters
 
   static _getQueryParam2 (pUrl, pName) {
@@ -33,7 +32,8 @@ export class Utils {
     let theWindow = null;
     try {
       theWindow = window;
-    } catch (err) { // eslint-disable-line no-unused-vars
+    } catch { /* eslint-disable no-unused-vars */
+
       // VOID
     }
     if (!theWindow || !theWindow.location) {
@@ -51,7 +51,8 @@ export class Utils {
       /* eslint-disable no-unused-vars */
       const theWindow = window;
       /* eslint-enable no-unused-vars */
-    } catch (err) { // eslint-disable-line no-unused-vars
+    } catch { /* eslint-disable no-unused-vars */
+
       return null;
     }
     /* istanbul ignore next */
@@ -111,7 +112,6 @@ export class Utils {
     return obj;
   }
 
-
   static getStorageItem (pStorage, pKeyName, pDefaultValue = null) {
     const storage = Utils._getStorage(pStorage);
     if (!storage) {
@@ -155,7 +155,6 @@ export class Utils {
   // other functions
 
   static addToolTip (pToolTipHost, pToolTipText, pStyle = "bottom-center") {
-
     // Users may want to switch this on to improve browser performance
     const toolTipMode = Utils.getStorageItem("session", "tooltip_mode");
 
@@ -181,7 +180,8 @@ export class Utils {
     if (pToolTipText) {
       const toolTipSpan = Utils.createSpan(
         ["no-search", "tooltip-text", "tooltip-text-" + pStyle],
-        pToolTipText);
+        pToolTipText,
+      );
       pToolTipHost.classList.add("tooltip");
 
       // ...then add the new tooltip
@@ -190,7 +190,6 @@ export class Utils {
   }
 
   static addErrorToTableCell (pTd, pErrorMessage, pStyle = "bottom-center") {
-
     // reduce the ["str"] case
     if (Array.isArray(pErrorMessage) && pErrorMessage.length === 1) {
       pErrorMessage = pErrorMessage[0];
@@ -211,7 +210,6 @@ export class Utils {
   }
 
   static _hasTextContent (pElement, pSearchText, pCaseSensitiveFlag) {
-
     if (pElement.classList && pElement.classList.contains("no-search")) {
       // skip stuff like header row, dropdown menus and tooltips
       return 0;
@@ -219,7 +217,11 @@ export class Utils {
 
     let found = false;
     for (const childNode of pElement.childNodes) {
-      const searchResult = Utils._hasTextContent(childNode, pSearchText, pCaseSensitiveFlag);
+      const searchResult = Utils._hasTextContent(
+        childNode,
+        pSearchText,
+        pCaseSensitiveFlag,
+      );
       if (searchResult === 2) {
         return 2;
       }
@@ -253,7 +255,6 @@ export class Utils {
   }
 
   static makeSearchBox (pSearchButton, pTable, pFieldList = null) {
-
     const div = Utils.createDiv("search-box", "");
     div.style.display = "none";
 
@@ -276,18 +277,15 @@ export class Utils {
     errorDiv.style.display = "none";
     div.append(errorDiv);
 
-    searchOptionsMenu.addMenuItem(
-      "Case sensitive", (ev) => {
-        Utils._updateSearchOption(ev, pTable, searchOptionsMenu, input);
-      });
-    searchOptionsMenu.addMenuItem(
-      "Regular expression", (ev) => {
-        Utils._updateSearchOption(ev, pTable, searchOptionsMenu, input);
-      });
-    searchOptionsMenu.addMenuItem(
-      "Invert search", (ev) => {
-        Utils._updateSearchOption(ev, pTable, searchOptionsMenu, input);
-      });
+    searchOptionsMenu.addMenuItem("Case sensitive", (ev) => {
+      Utils._updateSearchOption(ev, pTable, searchOptionsMenu, input);
+    });
+    searchOptionsMenu.addMenuItem("Regular expression", (ev) => {
+      Utils._updateSearchOption(ev, pTable, searchOptionsMenu, input);
+    });
+    searchOptionsMenu.addMenuItem("Invert search", (ev) => {
+      Utils._updateSearchOption(ev, pTable, searchOptionsMenu, input);
+    });
 
     // make the search function active
     pSearchButton.addEventListener("click", (pClickEvent) => {
@@ -311,7 +309,8 @@ export class Utils {
     Utils._updateTableFilter(
       pTable,
       pInput.value,
-      pSearchOptionsMenu.menuDropdownContent);
+      pSearchOptionsMenu.menuDropdownContent,
+    );
 
     let placeholder = Character.LEFT_POINTING_MAGNIFYING_GLASS;
     if (pSearchOptionsMenu.menuDropdownContent.childNodes[0]._value === true) {
@@ -346,7 +345,9 @@ export class Utils {
       fm.classList.remove("no-filter-match");
     }
 
-    const menuItems = startElement.querySelector(".search-box .menu-dropdown-content");
+    const menuItems = startElement.querySelector(
+      ".search-box .menu-dropdown-content",
+    );
 
     // hide/show search box (the block may become more complicated later)
     const input = pSearchBlock.querySelector("input");
@@ -407,8 +408,8 @@ export class Utils {
     if (regExpFlag) {
       try {
         regexp = new RegExp(pSearchText, caseSensitiveFlag ? "" : "i");
-      } catch (err) {
-        errorBox.innerText = err.message;
+      } catch { /* eslint-disable no-unused-vars */
+        errorBox.innerText = _err.message;
         errorBox.style.display = "";
         return;
       }
@@ -418,7 +419,8 @@ export class Utils {
     const searchParam = regExpFlag ? regexp : pSearchText;
     let hasEmptyMatches = false;
     let hasNonEmptyMatches = false;
-    const blocks = pTable.tagName === "TABLE" ? pTable.tBodies[0].rows : pTable.children;
+    const blocks =
+      pTable.tagName === "TABLE" ? pTable.tBodies[0].rows : pTable.children;
     for (const block of blocks) {
       if (block.classList.contains("no-search")) {
         // e.g. first row of output-panel
@@ -452,7 +454,10 @@ export class Utils {
     }
     if (pSearchText && hasEmptyMatches) {
       const indicator = hasNonEmptyMatches ? "also" : "only";
-      errorBox.innerText = "warning: there were " + indicator + " empty matches, highlighting is not performed";
+      errorBox.innerText =
+        "warning: there were " +
+        indicator +
+        " empty matches, highlighting is not performed";
       errorBox.style.display = "";
       return;
     }
@@ -471,7 +476,11 @@ export class Utils {
       for (const chr of pSearchText) {
         // prevent accidental construction of character classes
         /* eslint-disable no-extra-parens */
-        if ((chr >= "A" && chr <= "Z") || (chr >= "a" && chr <= "z") || (chr >= "0" && chr <= "9")) {
+        if (
+          (chr >= "A" && chr <= "Z") ||
+          (chr >= "a" && chr <= "z") ||
+          (chr >= "0" && chr <= "9")
+        ) {
           pattern += chr;
         } else {
           pattern += "\\" + chr;
@@ -527,7 +536,8 @@ export class Utils {
     const span = Utils.createSpan(
       "",
       Character.CLOCKWISE_OPEN_CIRCLE_ARROW + Character.NO_BREAK_SPACE,
-      "status" + pJobId);
+      "status" + pJobId,
+    );
 
     if (!pInitialDisplay) {
       span.style.display = "none";
@@ -586,7 +596,10 @@ export class Utils {
     // ignore the outcome of a promise
     // usually because an earlier promise has failed and
     // therefore the outcome of this one is no longer relevant
-    pPromise.then(() => false, () => false);
+    pPromise.then(
+      () => false,
+      () => false,
+    );
   }
 
   static msgPerMinion (pList, pMsg) {

@@ -4,10 +4,10 @@ const config = {
   // additional prefix for the API urls
   // with an empty string, the defaults will be used
   // See also https://docs.saltproject.io/en/latest/ref/netapi/all/salt.netapi.rest_cherrypy.html
-  "API_URL": "",
+  API_URL: "",
 
   // additional prefix for the navigation urls
   // with an empty string, the defaults will be used
-  "NAV_URL": "/app"
+  NAV_URL: "/saltgui",
 };
 /* eslint-enable no-unused-vars */

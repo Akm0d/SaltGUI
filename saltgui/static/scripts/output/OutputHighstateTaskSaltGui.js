@@ -1,11 +1,10 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {Output} from "./Output.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { Output } from "./Output.js";
+import { Utils } from "../Utils.js";
 
 export class OutputHighstateTaskSaltGui {
-
   static _addChangesInfo (pTaskDiv, pTask, pIndent) {
     if (pTask["changes"] === undefined) {
       return;
@@ -13,12 +12,13 @@ export class OutputHighstateTaskSaltGui {
 
     if (typeof pTask.changes !== "object" || Array.isArray(pTask.changes)) {
       pTaskDiv.append(Utils.createBr());
-      pTaskDiv.append(document.createTextNode(pIndent + JSON.stringify(pTask.changes)));
+      pTaskDiv.append(
+        document.createTextNode(pIndent + JSON.stringify(pTask.changes)),
+      );
       return;
     }
 
     for (const key of Object.keys(pTask.changes).sort()) {
-
       const change = pTask.changes[key];
 
       /* eslint-disable line-comment-position,no-inline-comments,curly */
@@ -44,8 +44,11 @@ export class OutputHighstateTaskSaltGui {
         for (const idx in change) {
           const task = change[idx];
           pTaskDiv.append(Utils.createBr());
-          pTaskDiv.append(document.createTextNode(
-            pIndent + key + "[" + idx + "]: " + JSON.stringify(task)));
+          pTaskDiv.append(
+            document.createTextNode(
+              pIndent + key + "[" + idx + "]: " + JSON.stringify(task),
+            ),
+          );
         }
         continue;
       }
@@ -53,9 +56,11 @@ export class OutputHighstateTaskSaltGui {
       if (change === null || typeof change !== "object") {
         // show all other non-objects in a simple way
         pTaskDiv.append(Utils.createBr());
-        pTaskDiv.append(document.createTextNode(
-          pIndent + key + ": " +
-          JSON.stringify(change)));
+        pTaskDiv.append(
+          document.createTextNode(
+            pIndent + key + ": " + JSON.stringify(change),
+          ),
+        );
         continue;
       }
 
@@ -65,15 +70,21 @@ export class OutputHighstateTaskSaltGui {
         // place changes on one line
         // don't use arrows here, these are higher than a regular
         // text-line and disturb the text-flow
-        pTaskDiv.append(document.createTextNode(
-          pIndent + key + ": " +
-          JSON.stringify(change.old) + " " +
-          Character.BLACK_RIGHT_POINTING_POINTER + " " +
-          JSON.stringify(change.new)));
+        pTaskDiv.append(
+          document.createTextNode(
+            pIndent +
+              key +
+              ": " +
+              JSON.stringify(change.old) +
+              " " +
+              Character.BLACK_RIGHT_POINTING_POINTER +
+              " " +
+              JSON.stringify(change.new),
+          ),
+        );
       }
       // then show whatever remains
       for (const taskkey of Object.keys(change).sort()) {
-
         // we already provided this as summary: old->new
         if (taskkey === "old" && change["new"] !== undefined) {
           continue;
@@ -83,14 +94,28 @@ export class OutputHighstateTaskSaltGui {
         }
 
         pTaskDiv.append(Utils.createBr());
-        pTaskDiv.append(document.createTextNode(
-          pIndent + key + ": " + taskkey + ": " +
-          JSON.stringify(change[taskkey])));
+        pTaskDiv.append(
+          document.createTextNode(
+            pIndent +
+              key +
+              ": " +
+              taskkey +
+              ": " +
+              JSON.stringify(change[taskkey]),
+          ),
+        );
       }
     }
   }
 
-  static getStateOutput (pTask, pTaskId, pTaskName, pFunctionName, pMinionId, pJobId) {
+  static getStateOutput (
+    pTask,
+    pTaskId,
+    pTaskName,
+    pFunctionName,
+    pMinionId,
+    pJobId,
+  ) {
     const taskDiv = Utils.createDiv();
 
     const span = Utils.createSpan("task-icon");
@@ -105,15 +130,19 @@ export class OutputHighstateTaskSaltGui {
     }
 
     if (pTask.__sls__) {
-      taskDiv.append(document.createTextNode(
-        " (from " + pTask.__sls__.replace(".", "/") + ".sls)"));
+      taskDiv.append(
+        document.createTextNode(
+          " (from " + pTask.__sls__.replace(".", "/") + ".sls)",
+        ),
+      );
     }
 
     const indent = "    ";
 
     taskDiv.append(Utils.createBr());
-    taskDiv.append(document.createTextNode(
-      indent + "Function is " + pFunctionName));
+    taskDiv.append(
+      document.createTextNode(indent + "Function is " + pFunctionName),
+    );
 
     if (pTask.comment) {
       taskDiv.append(Utils.createBr());
@@ -131,8 +160,15 @@ export class OutputHighstateTaskSaltGui {
       taskDiv.append(Utils.createBr());
       // start_time is set by the original minion in its own timezone
       // we have no knowledge of that timezone, so no enhanced presentation here
-      const startTime = Output.dateTimeStr("1999, Sep 9 " + pTask.start_time, null, null, true);
-      taskDiv.append(document.createTextNode(indent + "Started at " + startTime));
+      const startTime = Output.dateTimeStr(
+        "1999, Sep 9 " + pTask.start_time,
+        null,
+        null,
+        true,
+      );
+      taskDiv.append(
+        document.createTextNode(indent + "Started at " + startTime),
+      );
     }
 
     if (pTask["duration"] !== undefined) {
@@ -142,8 +178,11 @@ export class OutputHighstateTaskSaltGui {
         // report only the "slow" jobs
         // it still counts for the grand total thought
         taskDiv.append(Utils.createBr());
-        taskDiv.append(document.createTextNode(
-          indent + "Duration " + Output.getDuration(milliSeconds)));
+        taskDiv.append(
+          document.createTextNode(
+            indent + "Duration " + Output.getDuration(milliSeconds),
+          ),
+        );
       }
     }
 
@@ -172,8 +211,9 @@ export class OutputHighstateTaskSaltGui {
       if (key === "start_time") continue; // handled
       /* eslint-enable line-comment-position,no-inline-comments,curly */
       taskDiv.append(Utils.createBr());
-      taskDiv.append(document.createTextNode(
-        indent + key + " = " + JSON.stringify(item)));
+      taskDiv.append(
+        document.createTextNode(indent + key + " = " + JSON.stringify(item)),
+      );
     }
 
     return taskDiv;

@@ -1,10 +1,9 @@
 /* global */
 
-import {DropDownMenu} from "../DropDown.js";
-import {Utils} from "../Utils.js";
+import { DropDownMenu } from "../DropDown.js";
+import { Utils } from "../Utils.js";
 
 export class Issues {
-
   static removeCategory (pPanel, pCatName) {
     const rows = pPanel.table.tBodies[0].childNodes;
     for (const tr of rows) {
@@ -24,13 +23,15 @@ export class Issues {
   }
 
   static readyCategory (pPanel, pMsg) {
-
     // remove the "loading info..." message
     pPanel.msg2.removeChild(pMsg);
 
     pPanel.issuesStatus = Utils.txtZeroOneMany(
       pPanel.table.tBodies[0].children.length,
-      "No issues", "{0} issue", "{0} issues");
+      "No issues",
+      "{0} issue",
+      "{0} issues",
+    );
     pPanel.updateFooter();
 
     // any category still loading?
@@ -43,7 +44,6 @@ export class Issues {
   }
 
   static addIssue (pPanel, pCatName, pIssueName) {
-
     // remove a previous incarnation of the same issue
     Issues.removeIssue(pPanel, pCatName, pIssueName);
 

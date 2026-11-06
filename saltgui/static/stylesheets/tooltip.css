@@ -82,7 +82,8 @@ pre.output .tooltip:hover {
   border-width: 5px;
   border-style: solid;
   top: 100%;
-  border-color: var(--color-background-tooltip) transparent transparent transparent;
+  border-color: var(--color-background-tooltip) transparent transparent
+    transparent;
 }
 
 .tooltip > .tooltip-text-logo {
@@ -119,5 +120,6 @@ pre.output .tooltip:hover {
 }
 
 pre.output .tooltip > .tooltip-text::after {
-  border-color: var(--color-background-tooltip) transparent transparent transparent;
+  border-color: var(--color-background-tooltip) transparent transparent
+    transparent;
 }

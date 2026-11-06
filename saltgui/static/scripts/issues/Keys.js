@@ -1,28 +1,29 @@
 /* global */
 
-import {Issues} from "./Issues.js";
+import { Issues } from "./Issues.js";
 
 export class KeysIssues extends Issues {
-
   onGetIssues (pPanel) {
-
     const msg = super.onGetIssues(pPanel, "KEYS");
 
     const wheelKeyListAllPromise = this.api.getWheelKeyListAll();
 
-    wheelKeyListAllPromise.then((pWheelKeyListAllData) => {
-      Issues.removeCategory(pPanel, "unaccepted-key");
-      KeysIssues._handleKeysWheelKeyListAll(pPanel, pWheelKeyListAllData);
-      Issues.readyCategory(pPanel, msg);
-      return true;
-    }, (pWheelKeyListAllMsg) => {
-      Issues.removeCategory(pPanel, "unaccepted-key");
-      const tr = Issues.addIssue(pPanel, "unaccepted-key", "retrieving");
-      Issues.addIssueMsg(tr, "Could not retrieve list of unaccepted keys");
-      Issues.addIssueErr(tr, pWheelKeyListAllMsg);
-      Issues.readyCategory(pPanel, msg);
-      return false;
-    });
+    wheelKeyListAllPromise.then(
+      (pWheelKeyListAllData) => {
+        Issues.removeCategory(pPanel, "unaccepted-key");
+        KeysIssues._handleKeysWheelKeyListAll(pPanel, pWheelKeyListAllData);
+        Issues.readyCategory(pPanel, msg);
+        return true;
+      },
+      (pWheelKeyListAllMsg) => {
+        Issues.removeCategory(pPanel, "unaccepted-key");
+        const tr = Issues.addIssue(pPanel, "unaccepted-key", "retrieving");
+        Issues.addIssueMsg(tr, "Could not retrieve list of unaccepted keys");
+        Issues.addIssueErr(tr, pWheelKeyListAllMsg);
+        Issues.readyCategory(pPanel, msg);
+        return false;
+      },
+    );
 
     return wheelKeyListAllPromise;
   }

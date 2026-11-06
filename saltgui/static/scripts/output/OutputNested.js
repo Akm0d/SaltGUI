@@ -1,7 +1,6 @@
-import {Character} from "../Character.js";
+import { Character } from "../Character.js";
 
 export class OutputNested {
-
   // heavily inspired by the implementation for NESTED output
   // as originally implemented in salt/output/nested.py from Salt
 
@@ -40,14 +39,21 @@ export class OutputNested {
           }
           OutputNested.display(ind, pIndent + 2, prefix, pOutArray);
         } else {
-          OutputNested.display(ind, pIndent, "-" + Character.NO_BREAK_SPACE, pOutArray);
+          OutputNested.display(
+            ind,
+            pIndent,
+            "-" + Character.NO_BREAK_SPACE,
+            pOutArray,
+          );
         }
       }
     } else if (typeof pValue === "object") {
       if (pIndent) {
         pOutArray.push(OutputNested._ustring(pIndent, "----------"));
       }
-      const sortedKeys = Object.keys(pValue).sort((aa, bb) => aa.localeCompare(bb, "en", {"numeric": true}));
+      const sortedKeys = Object.keys(pValue).sort((aa, bb) =>
+        aa.localeCompare(bb, "en", { numeric: true }),
+      );
       for (const key of sortedKeys) {
         const val = pValue[key];
         pOutArray.push(OutputNested._ustring(pIndent, key, pPrefix, ":"));
@@ -67,5 +73,4 @@ export class OutputNested {
     const lines = OutputNested.display(pValue, pIndentLevel, "", []);
     return lines.join("\n");
   }
-
 }

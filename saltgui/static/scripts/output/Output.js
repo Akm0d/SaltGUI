@@ -1,13 +1,13 @@
 /* global */
 
-import {Character} from "../Character.js";
-import {OutputDocumentation} from "./OutputDocumentation.js";
-import {OutputHighstate} from "./OutputHighstate.js";
-import {OutputJson} from "./OutputJson.js";
-import {OutputNested} from "./OutputNested.js";
-import {OutputYaml} from "./OutputYaml.js";
-import {ParseCommandLine} from "../ParseCommandLine.js";
-import {Utils} from "../Utils.js";
+import { Character } from "../Character.js";
+import { OutputDocumentation } from "./OutputDocumentation.js";
+import { OutputHighstate } from "./OutputHighstate.js";
+import { OutputJson } from "./OutputJson.js";
+import { OutputNested } from "./OutputNested.js";
+import { OutputYaml } from "./OutputYaml.js";
+import { ParseCommandLine } from "../ParseCommandLine.js";
+import { Utils } from "../Utils.js";
 
 // Functions to turn responses from the salt system into visual information
 // The following variations exist:
@@ -29,11 +29,13 @@ import {Utils} from "../Utils.js";
 //    This output is re-organized to let it appear as if the output comes
 //    from a single node called "master".
 
-
 export class Output {
-
   static isOutputFormatAllowed (pRequestedOutputFormat) {
-    const outputFormats = Utils.getStorageItem("session", "output_formats", "doc,saltguihighstate,json");
+    const outputFormats = Utils.getStorageItem(
+      "session",
+      "output_formats",
+      "doc,saltguihighstate,json",
+    );
     const items = outputFormats.split(",");
     return items.includes(pRequestedOutputFormat);
   }
@@ -47,15 +49,14 @@ export class Output {
   // from a single node called "RUNNER" or "MASTER".
   // This way all responses are organized by minion
   static _addVirtualMinion (pResponse, pCommand) {
-
     if (pCommand.startsWith("runners.")) {
       // Add a new level in the object
-      return {"RUNNER": pResponse};
+      return { RUNNER: pResponse };
     }
 
     if (pCommand.startsWith("wheel.")) {
       // Add a new level in the object
-      return {"WHEEL": pResponse};
+      return { WHEEL: pResponse };
     }
 
     // otherwise return the original
@@ -89,7 +90,6 @@ export class Output {
     return Utils.createSpan("", pMinionResponse);
   }
 
-
   // format an object in the preferred style
   static formatObject (pObject) {
     if (Output.isOutputFormatAllowed("json")) {
@@ -108,7 +108,6 @@ export class Output {
     return OutputJson.formatJSON(pObject);
   }
 
-
   // this is the default output form
   // just format the returned objects
   // note: do not return a text-node
@@ -117,7 +116,6 @@ export class Output {
     const isMultiLineString = Utils.isMultiLineString(content);
     return Utils.createElem(isMultiLineString ? "div" : "span", "", content);
   }
-
 
   static _hasProperties (pObject, pPropArr) {
     if (!pObject || typeof pObject !== "object") {
@@ -130,7 +128,6 @@ export class Output {
     }
     return true;
   }
-
 
   static _isAsyncOutput (pResponse) {
     const keys = Object.keys(pResponse);
@@ -165,10 +162,18 @@ export class Output {
   // some older browsers cannot produce formatted datetime this way
   // toLocaleString/toLocaleTimeString then return "Invalid Date"
   // silently ignore that, provide an alternative and then do not produce a tooltip
-  static dateTimeStr (pDtStr, pDateTimeField = null, pDateTimeStyle = "bottom-center", pTimeOnly = false) {
-
+  static dateTimeStr (
+    pDtStr,
+    pDateTimeField = null,
+    pDateTimeStyle = "bottom-center",
+    pTimeOnly = false,
+  ) {
     // no available setting, then return the original
-    let dateTimeFractionDigits = Utils.getStorageItemInteger("session", "datetime_fraction_digits", 6);
+    let dateTimeFractionDigits = Utils.getStorageItemInteger(
+      "session",
+      "datetime_fraction_digits",
+      6,
+    );
     // stick to the min/max values without complaining
     if (dateTimeFractionDigits < 0) {
       dateTimeFractionDigits = 0;
@@ -176,7 +181,11 @@ export class Output {
       dateTimeFractionDigits = 6;
     }
 
-    const dateTimeRepresentation = Utils.getStorageItem("session", "datetime_representation", "utc");
+    const dateTimeRepresentation = Utils.getStorageItem(
+      "session",
+      "datetime_representation",
+      "utc",
+    );
 
     if (typeof pDtStr === "number") {
       pTimeOnly = pDtStr < 100 * 86400;
@@ -186,8 +195,34 @@ export class Output {
     if (typeof pDtStr === "object") {
       // assume it is a Date
       // 2019, Jan 26 19:05:22.808348
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      pDtStr = pDtStr.getUTCFullYear() + ", " + months[pDtStr.getUTCMonth()] + " " + pDtStr.getUTCDate() + " " + Output.nDigits(pDtStr.getUTCHours(), 2) + ":" + Output.nDigits(pDtStr.getUTCMinutes(), 2) + ":" + Output.nDigits(pDtStr.getUTCSeconds(), 2) + "." + Output.nDigits(pDtStr.getUTCMilliseconds(), 3);
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      pDtStr =
+        pDtStr.getUTCFullYear() +
+        ", " +
+        months[pDtStr.getUTCMonth()] +
+        " " +
+        pDtStr.getUTCDate() +
+        " " +
+        Output.nDigits(pDtStr.getUTCHours(), 2) +
+        ":" +
+        Output.nDigits(pDtStr.getUTCMinutes(), 2) +
+        ":" +
+        Output.nDigits(pDtStr.getUTCSeconds(), 2) +
+        "." +
+        Output.nDigits(pDtStr.getUTCMilliseconds(), 3);
     }
 
     let fractionSecondsPart = pDtStr;
@@ -201,7 +236,10 @@ export class Output {
     fractionSecondsPart = fractionSecondsPart.replace(/[^0-9].*$/, "");
     let originalFractionSecondsPart = fractionSecondsPart;
     // truncate digits to maximum length
-    fractionSecondsPart = fractionSecondsPart.substring(0, dateTimeFractionDigits);
+    fractionSecondsPart = fractionSecondsPart.substring(
+      0,
+      dateTimeFractionDigits,
+    );
 
     // format the decimal number 1.1 and see which separator is used
     const decimalSeparator = 1.1.toLocaleString().substring(1, 2);
@@ -209,7 +247,8 @@ export class Output {
       fractionSecondsPart = decimalSeparator + fractionSecondsPart;
     }
     if (originalFractionSecondsPart !== "") {
-      originalFractionSecondsPart = decimalSeparator + originalFractionSecondsPart;
+      originalFractionSecondsPart =
+        decimalSeparator + originalFractionSecondsPart;
     }
 
     // remove the fraction from the original
@@ -230,7 +269,10 @@ export class Output {
 
     let utcDT;
     if (pTimeOnly || dateTimeRepresentation === "local-utctime") {
-      utcDT = dateObj.toLocaleTimeString(undefined, {"timeZone": "UTC", "timeZoneName": "short"});
+      utcDT = dateObj.toLocaleTimeString(undefined, {
+        timeZone: "UTC",
+        timeZoneName: "short",
+      });
       if (utcDT.search("Invalid") >= 0) {
         // but not the verbose timezone name
         utcDT = dateObj.toTimeString().replace(/ *[(][^)]*[)]$/, "");
@@ -239,7 +281,10 @@ export class Output {
         utcDT = pDtStr.replace(/^[-0-9]*T/, "").replace(/^1999, Sep 9 /, "");
       }
     } else {
-      utcDT = dateObj.toLocaleString(undefined, {"timeZone": "UTC", "timeZoneName": "short"});
+      utcDT = dateObj.toLocaleString(undefined, {
+        timeZone: "UTC",
+        timeZoneName: "short",
+      });
       if (utcDT.search("Invalid") >= 0) {
         utcDT = dateObj.toString().replace(/ *[(][^)]*[)]$/, "");
       }
@@ -251,7 +296,9 @@ export class Output {
 
     let localDT;
     if (pTimeOnly || dateTimeRepresentation === "utc-localtime") {
-      localDT = dateObj.toLocaleTimeString(undefined, {"timeZoneName": "short"});
+      localDT = dateObj.toLocaleTimeString(undefined, {
+        timeZoneName: "short",
+      });
       if (localDT.search("Invalid") >= 0) {
         localDT = dateObj.toString().replace(/ *[(][^)]*[)]$/, "");
       }
@@ -259,7 +306,7 @@ export class Output {
         localDT = pDtStr.replace(/^[-0-9]*T/, "").replace(/^1999, Sep 9 /, "");
       }
     } else {
-      localDT = dateObj.toLocaleString(undefined, {"timeZoneName": "short"});
+      localDT = dateObj.toLocaleString(undefined, { timeZoneName: "short" });
       if (localDT.search("Invalid") >= 0) {
         localDT = dateObj.toString().replace(/ *[(][^)]*[)]$/, "");
       }
@@ -270,15 +317,24 @@ export class Output {
     const localTZ = localDT.replace(/^.* /, "");
     localDT = localDT.replace(/ [^ ]*$/, "");
 
-    if (milliSecondsSinceEpoch >= 86400 * 1000 && milliSecondsSinceEpoch < 100 * 86400 * 1000) {
+    if (
+      milliSecondsSinceEpoch >= 86400 * 1000 &&
+      milliSecondsSinceEpoch < 100 * 86400 * 1000
+    ) {
       const days = Math.trunc(milliSecondsSinceEpoch / (86400 * 1000)) + "d ";
       utcDT = days + utcDT;
       localDT = days + localDT;
     }
 
     // put the milliseconds in the proper location
-    const utcDTms = utcDT.replace(/( [a-zA-Z.]*)?( [-A-Z0-9]*|Z)?$/, fractionSecondsPart + "$&");
-    const localDTms = localDT.replace(/( [a-zA-Z.]*)?( [-A-Z0-9]*|Z)?$/, fractionSecondsPart + "$&");
+    const utcDTms = utcDT.replace(
+      /( [a-zA-Z.]*)?( [-A-Z0-9]*|Z)?$/,
+      fractionSecondsPart + "$&",
+    );
+    const localDTms = localDT.replace(
+      /( [a-zA-Z.]*)?( [-A-Z0-9]*|Z)?$/,
+      fractionSecondsPart + "$&",
+    );
 
     let ret;
     switch (dateTimeRepresentation) {
@@ -300,11 +356,20 @@ export class Output {
     }
 
     if (pDateTimeField) {
-      utcDT = dateObj.toLocaleString(undefined, {"timeZone": "UTC", "timeZoneName": "short"});
+      utcDT = dateObj.toLocaleString(undefined, {
+        timeZone: "UTC",
+        timeZoneName: "short",
+      });
       // place the milliseconds after the seconds (before am/pm indicator and timezone)
-      utcDT = utcDT.replace(/( [a-zA-Z.]*)? [-A-Z0-9]*$/, originalFractionSecondsPart + "$&");
-      localDT = dateObj.toLocaleString(undefined, {"timeZoneName": "short"});
-      localDT = localDT.replace(/( [a-zA-Z.]*)? [-A-Z0-9+]*$/, originalFractionSecondsPart + "$&");
+      utcDT = utcDT.replace(
+        /( [a-zA-Z.]*)? [-A-Z0-9]*$/,
+        originalFractionSecondsPart + "$&",
+      );
+      localDT = dateObj.toLocaleString(undefined, { timeZoneName: "short" });
+      localDT = localDT.replace(
+        /( [a-zA-Z.]*)? [-A-Z0-9+]*$/,
+        originalFractionSecondsPart + "$&",
+      );
       pDateTimeField.innerText = ret;
       const txt = utcDT + "\n" + localDT;
       if (txt.search("Invalid") < 0) {
@@ -317,14 +382,27 @@ export class Output {
 
   static getDuration (pMilliSeconds) {
     if (pMilliSeconds < 1000) {
-      return Utils.txtZeroOneMany(Math.round(pMilliSeconds),
-        "{0} ms", "{0} ms", "{0} ms");
+      return Utils.txtZeroOneMany(
+        Math.round(pMilliSeconds),
+        "{0} ms",
+        "{0} ms",
+        "{0} ms",
+      );
     }
-    return Utils.txtZeroOneMany(Math.round(pMilliSeconds) / 1000, "", "{0} s", "{0} s");
+    return Utils.txtZeroOneMany(
+      Math.round(pMilliSeconds) / 1000,
+      "",
+      "{0} s",
+      "{0} s",
+    );
   }
 
   static isHiddenTask (pTask) {
-    const isStateVerbose = Utils.getStorageItemBoolean("session", "state_verbose", true);
+    const isStateVerbose = Utils.getStorageItemBoolean(
+      "session",
+      "state_verbose",
+      true,
+    );
     /* eslint-disable curly */
     if (isStateVerbose) return false;
     if (pTask.result !== true) return false;
@@ -361,7 +439,9 @@ export class Output {
       return Character.BLACK_DIAMOND;
     }
     if (Array.isArray(pTask.changes)) {
-      return pTask.changes.length === 0 ? Character.BLACK_CIRCLE : Character.BLACK_DIAMOND;
+      return pTask.changes.length === 0
+        ? Character.BLACK_CIRCLE
+        : Character.BLACK_DIAMOND;
     }
     if (Object.keys(pTask.changes).length === 0) {
       // empty changes object does not count as real change
@@ -383,7 +463,8 @@ export class Output {
         nrChanges,
         "\n'changes' is an empty array",
         "\n'changes' is an array\n" + nrChanges + " change",
-        "\n'changes' is an array\n" + nrChanges + " changes");
+        "\n'changes' is an array\n" + nrChanges + " changes",
+      );
     }
     if (Object.keys(pTask.changes).length === 0) {
       // empty changes object does not count as real change
@@ -411,7 +492,6 @@ export class Output {
   }
 
   static _setTaskToolTip (pSpan, pTask) {
-
     if (typeof pTask !== "object") {
       return;
     }
@@ -485,12 +565,10 @@ export class Output {
 
   // add the status summary
   static addHighStateSummary (pMinionRow, pMinionDiv, pMinionId, pTasks) {
-
     let nr = 0;
     const summarySpan = Utils.createSpan("task-summary", "");
 
     for (const task of pTasks) {
-
       nr += 1;
 
       const span = Utils.createSpan("", Character.BLACK_CIRCLE);
@@ -499,7 +577,6 @@ export class Output {
 
       const myNr = nr;
       span.addEventListener("click", (pClickEvent) => {
-
         // show the output, it might be hidden
         const triangle = pMinionDiv.querySelector("span.triangle");
         triangle.innerText = Character.WHITE_DOWN_POINTING_TRIANGLE;
@@ -525,7 +602,7 @@ export class Output {
 
         // behavior: smooth is ok, the destination is nearby
         // block: since block is below our summary, nearest is equivalent to end
-        taskDiv.scrollIntoView({"behavior": "smooth", "block": "nearest"});
+        taskDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
         pClickEvent.stopPropagation();
       });
@@ -533,9 +610,17 @@ export class Output {
       summarySpan.append(span);
     }
 
-    const stateCompressIds = Utils.getStorageItemBoolean("session", "state_compress_ids");
+    const stateCompressIds = Utils.getStorageItemBoolean(
+      "session",
+      "state_compress_ids",
+    );
     if (stateCompressIds) {
-      summarySpan.append(Utils.createSpan("state-details-compressed", Character.NO_BREAK_SPACE + "(state details may be compressed)"));
+      summarySpan.append(
+        Utils.createSpan(
+          "state-details-compressed",
+          Character.NO_BREAK_SPACE + "(state details may be compressed)",
+        ),
+      );
     }
 
     pMinionRow.append(summarySpan);
@@ -571,7 +656,11 @@ export class Output {
       // e.g. wheel.keys.list_all (after data+tag reduction above)
       return pMinionResponse.return;
     }
-    if (pCommand.startsWith("runner.") && pMinionResponse && pMinionResponse["return"] !== undefined) {
+    if (
+      pCommand.startsWith("runner.") &&
+      pMinionResponse &&
+      pMinionResponse["return"] !== undefined
+    ) {
       // ???
       return pMinionResponse.return.return;
     }
@@ -594,7 +683,15 @@ export class Output {
     return "host-success";
   }
 
-  static _addDownload (pParentDiv, pJobId, pObject, pFormatFunction, pTypeLabel, pContentType, pFilenameExtension) {
+  static _addDownload (
+    pParentDiv,
+    pJobId,
+    pObject,
+    pFormatFunction,
+    pTypeLabel,
+    pContentType,
+    pFilenameExtension,
+  ) {
     const downloadA = Utils.createElem("a", "no-print");
     downloadA.innerText = pTypeLabel;
     downloadA.style = "float:right; margin-left:10px";
@@ -602,7 +699,7 @@ export class Output {
       // based on one of the answers in:
       // https://stackoverflow.com/questions/4184944/javascript-download-data-to-file-from-content-within-the-page
       const dummyA = Utils.createElem("a");
-      const blob = new Blob([pFormatFunction(pObject)], {"type": pContentType});
+      const blob = new Blob([pFormatFunction(pObject)], { type: pContentType });
       /* eslint-disable compat/compat */
       /* URL is not supported in op_mini all, IE 11  compat/compat */
       dummyA.href = window.URL.createObjectURL(blob);
@@ -623,7 +720,7 @@ export class Output {
     downloadA.innerText = pJobId;
     downloadA.style = "float:right; margin-left:10px";
     downloadA.addEventListener("click", (pClickEvent) => {
-      Output.router.goTo("job", {"id": pJobId});
+      Output.router.goTo("job", { id: pJobId });
       pClickEvent.stopPropagation();
     });
     pParentDiv.appendChild(downloadA);
@@ -644,14 +741,21 @@ export class Output {
       if (minionResponse["return"] !== undefined) {
         // with full_return, there is an extra level
         minionResponse = minionResponse["return"];
-        if (typeof minionResponse !== "object" || Array.isArray(minionResponse)) {
+        if (
+          typeof minionResponse !== "object" ||
+          Array.isArray(minionResponse)
+        ) {
           continue;
         }
       }
 
       for (const key in minionResponse) {
         const result = minionResponse[key];
-        if (result === null || typeof result !== "object" || Array.isArray(result)) {
+        if (
+          result === null ||
+          typeof result !== "object" ||
+          Array.isArray(result)
+        ) {
           continue;
         }
         if (typeof result.start_time === "string") {
@@ -665,8 +769,16 @@ export class Output {
 
   // the orchestrator for the output
   // determines what format should be used and uses that
-  static addResponseOutput (pOutputContainer, pJobId, pMinionData, pResponse, pCommand, pInitialStatus, pHighlightMinionId, pExtraInfo) {
-
+  static addResponseOutput (
+    pOutputContainer,
+    pJobId,
+    pMinionData,
+    pResponse,
+    pCommand,
+    pInitialStatus,
+    pHighlightMinionId,
+    pExtraInfo,
+  ) {
     // remove old content
     pOutputContainer.innerText = "";
 
@@ -687,9 +799,17 @@ export class Output {
     // it might be documentation
     const commandCmd = pCommand.trim().replace(/ .*/, "");
     const commandArg = pCommand.trim().replace(/^[a-z.]* */i, "");
-    const isDocumentationOutput = OutputDocumentation.isDocumentationOutput(pResponse, commandCmd, commandArg);
+    const isDocumentationOutput = OutputDocumentation.isDocumentationOutput(
+      pResponse,
+      commandCmd,
+      commandArg,
+    );
     if (isDocumentationOutput) {
-      OutputDocumentation.reduceDocumentationOutput(pResponse, commandArg, commandArg);
+      OutputDocumentation.reduceDocumentationOutput(
+        pResponse,
+        commandArg,
+        commandArg,
+      );
       OutputDocumentation.addDocumentationOutput(pOutputContainer, pResponse);
       return;
     }
@@ -699,22 +819,36 @@ export class Output {
 
     const downloadObject = {};
 
-    if (!pCommand.startsWith("runners.") &&
-       !pCommand.startsWith("wheel.") &&
-       !Output._isAsyncOutput(pResponse)) {
+    if (
+      !pCommand.startsWith("runners.") &&
+      !pCommand.startsWith("wheel.") &&
+      !Output._isAsyncOutput(pResponse)
+    ) {
       // runners/wheel responses are not per minion
       // Do not produce a #response line for async-start confirmation
 
       // for the result of jobs.active
-      const summaryJobsActiveSpan = Utils.createSpan("", pInitialStatus, "summary-jobs-active");
+      const summaryJobsActiveSpan = Utils.createSpan(
+        "",
+        pInitialStatus,
+        "summary-jobs-active",
+      );
 
       // for the result of jobs.list_job
-      const summaryJobsListJobSpan = Utils.createSpan("", "", "summary-list-job");
+      const summaryJobsListJobSpan = Utils.createSpan(
+        "",
+        "",
+        "summary-list-job",
+      );
 
       const cntResponses = Object.keys(pResponse).length;
 
-      let txt = Utils.txtZeroOneMany(cntResponses,
-        "", ", {0} response", ", {0} responses");
+      let txt = Utils.txtZeroOneMany(
+        cntResponses,
+        "",
+        ", {0} response",
+        ", {0} responses",
+      );
 
       const summary = {};
       for (const minionId in pResponse) {
@@ -741,12 +875,20 @@ export class Output {
       for (const key of keys) {
         txt += ", ";
         if (key.startsWith("0-")) {
-          txt += Utils.txtZeroOneMany(summary[key],
-            "", "{0} success", "{0} successes");
+          txt += Utils.txtZeroOneMany(
+            summary[key],
+            "",
+            "{0} success",
+            "{0} successes",
+          );
         } else {
           // if (key.startsWith("1-"))
-          txt += Utils.txtZeroOneMany(summary[key],
-            "", "{0} failure", "{0} failures");
+          txt += Utils.txtZeroOneMany(
+            summary[key],
+            "",
+            "{0} failure",
+            "{0} failures",
+          );
         }
         if (key !== "0-0" && key !== "1-1") {
           // don't show the retcode for expected combinations
@@ -769,16 +911,28 @@ export class Output {
       }
 
       if (cntMissingResponses > 0) {
-        txt += Utils.txtZeroOneMany(cntMissingResponses,
-          "", ", {0} no response", ", {0} no responses");
+        txt += Utils.txtZeroOneMany(
+          cntMissingResponses,
+          "",
+          ", {0} no response",
+          ", {0} no responses",
+        );
       }
       if (cntExtraResponses > 0 && cntExtraResponses !== cntResponses) {
-        txt += Utils.txtZeroOneMany(cntExtraResponses,
-          "", ", {0} unexpected response", ", {0} unexpected responses");
+        txt += Utils.txtZeroOneMany(
+          cntExtraResponses,
+          "",
+          ", {0} unexpected response",
+          ", {0} unexpected responses",
+        );
       }
 
       const cntTotal = cntResponses + cntMissingResponses;
-      if (cntTotal !== cntResponses && cntTotal !== cntMissingResponses && cntTotal !== cntExtraResponses) {
+      if (
+        cntTotal !== cntResponses &&
+        cntTotal !== cntMissingResponses &&
+        cntTotal !== cntExtraResponses
+      ) {
         txt += ", " + cntTotal + " total";
       }
 
@@ -864,11 +1018,21 @@ export class Output {
       // start with runner output
       jid = Object.values(pResponse)[0].jid;
       // reducing the response is integrated below
-    } else if (!jid && pResponse.RUNNER && pResponse.RUNNER.data && pResponse.RUNNER.data.jid) {
+    } else if (
+      !jid &&
+      pResponse.RUNNER &&
+      pResponse.RUNNER.data &&
+      pResponse.RUNNER.data.jid
+    ) {
       // try the runner output; unfortunatelly the job is not retyrievable later
       // jid = pResponse.RUNNER.data.jid;
       pResponse.RUNNER = pResponse.RUNNER.data.return;
-    } else if (!jid && pResponse.WHEEL && pResponse.WHEEL.data && pResponse.WHEEL.data.jid) {
+    } else if (
+      !jid &&
+      pResponse.WHEEL &&
+      pResponse.WHEEL.data &&
+      pResponse.WHEEL.data.jid
+    ) {
       // try the wheel output; unfortunatelly the job is not retyrievable later
       // jid = pResponse.WHEEL.data.jid;
       pResponse.WHEEL = pResponse.WHEEL.data.return;
@@ -881,34 +1045,76 @@ export class Output {
     }
 
     // in reverse order
-    Output._addDownload(topSummaryDiv, pJobId, downloadObject,
-      JSON.stringify, "RAW-JSON", "application/json", "raw.json");
-    Output._addDownload(topSummaryDiv, pJobId, downloadObject,
-      OutputYaml.formatYAML, "YAML", "text/vnd.yaml", "yaml");
-    Output._addDownload(topSummaryDiv, pJobId, downloadObject,
-      OutputNested.formatNESTED, "NESTED", "text/plain", "nested.txt");
-    Output._addDownload(topSummaryDiv, pJobId, downloadObject,
-      OutputJson.formatJSON, "JSON", "application/json", "json");
+    Output._addDownload(
+      topSummaryDiv,
+      pJobId,
+      downloadObject,
+      JSON.stringify,
+      "RAW-JSON",
+      "application/json",
+      "raw.json",
+    );
+    Output._addDownload(
+      topSummaryDiv,
+      pJobId,
+      downloadObject,
+      OutputYaml.formatYAML,
+      "YAML",
+      "text/vnd.yaml",
+      "yaml",
+    );
+    Output._addDownload(
+      topSummaryDiv,
+      pJobId,
+      downloadObject,
+      OutputNested.formatNESTED,
+      "NESTED",
+      "text/plain",
+      "nested.txt",
+    );
+    Output._addDownload(
+      topSummaryDiv,
+      pJobId,
+      downloadObject,
+      OutputJson.formatJSON,
+      "JSON",
+      "application/json",
+      "json",
+    );
 
     const downloadLabel = Utils.createSpan("no-print", "download as:");
     downloadLabel.style = "float:right";
     topSummaryDiv.appendChild(downloadLabel);
 
     if (Output._hasStartTimeField(pResponse)) {
-      const span = Utils.createDiv("", "\n" + Character.CIRCLED_INFORMATION_SOURCE + " start-time of tasks is using local-time from the minion");
+      const span = Utils.createDiv(
+        "",
+        "\n" +
+          Character.CIRCLED_INFORMATION_SOURCE +
+          " start-time of tasks is using local-time from the minion",
+      );
       topSummaryDiv.append(span);
     }
 
     // for all other types we consider the output per minion
     // this is more generic and it simplifies the handlers
     for (const minionId of [...pMinionData].sort()) {
-
       let minionResponse = pResponse[minionId];
 
-      if (commandCmd === "runner.state.orchestrate" && minionResponse.return && minionResponse.return.return && minionResponse.return.return.data) {
+      if (
+        commandCmd === "runner.state.orchestrate" &&
+        minionResponse.return &&
+        minionResponse.return.return &&
+        minionResponse.return.return.data
+      ) {
         minionResponse = minionResponse.return.return.data[minionId];
       }
-      if (commandCmd === "runner.state.orchestrate_single" && minionResponse.return && minionResponse.return.return && typeof minionResponse.return.return === "object") {
+      if (
+        commandCmd === "runner.state.orchestrate_single" &&
+        minionResponse.return &&
+        minionResponse.return.return &&
+        typeof minionResponse.return.return === "object"
+      ) {
         minionResponse = Object.values(minionResponse.return.return)[0];
       }
 
@@ -957,38 +1163,61 @@ export class Output {
       }
 
       // it might be highstate output
-      const isHighStateOutput = OutputHighstate.isHighStateOutput(commandCmd, minionResponse);
+      const isHighStateOutput = OutputHighstate.isHighStateOutput(
+        commandCmd,
+        minionResponse,
+      );
 
       const tasks = [];
       if (isHighStateOutput) {
         // The tasks are in an (unordered) object with uninteresting keys
         // convert it to an array that is in execution order
         // first put all the values in an array
-        Object.keys(minionResponse).forEach(
-          (taskKey) => {
-            if (typeof minionResponse[taskKey] === "object") {
-              minionResponse[taskKey].___key___ = taskKey;
-              tasks.push(minionResponse[taskKey]);
-            }
+        Object.keys(minionResponse).forEach((taskKey) => {
+          if (typeof minionResponse[taskKey] === "object") {
+            minionResponse[taskKey].___key___ = taskKey;
+            tasks.push(minionResponse[taskKey]);
           }
-        );
+        });
         // then sort the array
         tasks.sort((aa, bb) => aa.__run_num__ - bb.__run_num__);
       }
 
       let addHighStateSummaryFlag = false;
       // enhanced highstate display
-      if (!fndRepresentation && isHighStateOutput && Output.isOutputFormatAllowed("saltguihighstate")) {
-        minionLabel = OutputHighstate.getHighStateLabel(minionId, minionResponse);
-        minionOutput = OutputHighstate.getHighStateOutput(minionId, tasks, pJobId);
+      if (
+        !fndRepresentation &&
+        isHighStateOutput &&
+        Output.isOutputFormatAllowed("saltguihighstate")
+      ) {
+        minionLabel = OutputHighstate.getHighStateLabel(
+          minionId,
+          minionResponse,
+        );
+        minionOutput = OutputHighstate.getHighStateOutput(
+          minionId,
+          tasks,
+          pJobId,
+        );
         minionMultiLine = true;
         fndRepresentation = true;
         addHighStateSummaryFlag = true;
       }
       // regular highstate display
-      if (!fndRepresentation && isHighStateOutput && Output.isOutputFormatAllowed("highstate")) {
-        minionLabel = OutputHighstate.getHighStateLabel(minionId, minionResponse);
-        minionOutput = OutputHighstate.getHighStateOutput(minionId, tasks, pJobId);
+      if (
+        !fndRepresentation &&
+        isHighStateOutput &&
+        Output.isOutputFormatAllowed("highstate")
+      ) {
+        minionLabel = OutputHighstate.getHighStateLabel(
+          minionId,
+          minionResponse,
+        );
+        minionOutput = OutputHighstate.getHighStateOutput(
+          minionId,
+          tasks,
+          pJobId,
+        );
         minionMultiLine = true;
         fndRepresentation = true;
         addHighStateSummaryFlag = true;
@@ -998,7 +1227,10 @@ export class Output {
       // unless all output is unexpected
       // that happens when the minion-list is lost
       // this happens with some storage backends
-      if (originalMinionData.length > 0 && !originalMinionData.includes(minionId)) {
+      if (
+        originalMinionData.length > 0 &&
+        !originalMinionData.includes(minionId)
+      ) {
         minionLabel.innerText += " (unexpected)";
       }
 
@@ -1007,7 +1239,10 @@ export class Output {
         minionOutput = Output._getNormalOutput(minionResponse);
         if (minionOutput.tagName === "DIV") {
           minionMultiLine = true;
-        } else if (typeof minionOutput === "string" && Utils.isMultiLineString(minionOutput)) {
+        } else if (
+          typeof minionOutput === "string" &&
+          Utils.isMultiLineString(minionOutput)
+        ) {
           minionMultiLine = true;
         }
       }
@@ -1030,7 +1265,10 @@ export class Output {
       if (minionMultiLine) {
         if (minionId === pHighlightMinionId) {
           // when we chose this minion
-          triangle = Utils.createSpan("triangle", Character.WHITE_DOWN_POINTING_TRIANGLE);
+          triangle = Utils.createSpan(
+            "triangle",
+            Character.WHITE_DOWN_POINTING_TRIANGLE,
+          );
         } else {
           triangle = Utils.createSpan("triangle", masterTriangle.innerText);
         }
@@ -1072,16 +1310,20 @@ export class Output {
             }
           }, 1000);
 
-          div.scrollIntoView({"behavior": "smooth", "block": "start"});
+          div.scrollIntoView({ behavior: "smooth", block: "start" });
           pClickEvent.stopPropagation();
         });
       }
 
       minionOutput.classList.add(
         "minion-output",
-        minionMultiLine ? "minion-output-multiple" : "minion-output-single");
+        minionMultiLine ? "minion-output-multiple" : "minion-output-single",
+      );
       // hide the per-minion details when we have so many minions
-      if (triangle && triangle.innerText === Character.WHITE_RIGHT_POINTING_TRIANGLE) {
+      if (
+        triangle &&
+        triangle.innerText === Character.WHITE_RIGHT_POINTING_TRIANGLE
+      ) {
         minionOutput.style.display = "none";
       }
       div.append(minionOutput);
@@ -1091,7 +1333,9 @@ export class Output {
 
     if (pHighlightMinionId) {
       // scroll to this minion
-      const div = pOutputContainer.querySelector("#" + Utils.getIdFromMinionId(pHighlightMinionId));
+      const div = pOutputContainer.querySelector(
+        "#" + Utils.getIdFromMinionId(pHighlightMinionId),
+      );
       if (div) {
         const minionRow = div.querySelector("span");
         minionRow.classList.add("highlight-task");
@@ -1102,7 +1346,7 @@ export class Output {
           }
         }, 1000);
 
-        div.scrollIntoView({"behavior": "smooth", "block": "start"});
+        div.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
 
@@ -1114,7 +1358,8 @@ export class Output {
 
     // no minions in the result
     if (!Object.keys(pMinionData).length) {
-      pOutputContainer.innerText = "No minions matched the target. No command was sent, no jid was assigned.\nERROR: No return received";
+      pOutputContainer.innerText =
+        "No minions matched the target. No command was sent, no jid was assigned.\nERROR: No return received";
     }
   }
 }

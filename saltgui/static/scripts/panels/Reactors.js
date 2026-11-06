@@ -1,12 +1,11 @@
 /* global */
 
-import {Output} from "../output/Output.js";
-import {Panel} from "./Panel.js";
-import {Router} from "../Router.js";
-import {Utils} from "../Utils.js";
+import { Output } from "../output/Output.js";
+import { Panel } from "./Panel.js";
+import { Router } from "../Router.js";
+import { Utils } from "../Utils.js";
 
 export class ReactorsPanel extends Panel {
-
   constructor () {
     super("reactors");
 
@@ -21,13 +20,18 @@ export class ReactorsPanel extends Panel {
   onShow () {
     const wheelConfigValuesPromise = this.api.getWheelConfigValues();
 
-    wheelConfigValuesPromise.then((pWheelConfigValuesData) => {
-      this._handleReactorsWheelConfigValues(pWheelConfigValuesData);
-      return true;
-    }, (pWheelConfigValuesMsg) => {
-      this._handleReactorsWheelConfigValues(JSON.stringify(pWheelConfigValuesMsg));
-      return false;
-    });
+    wheelConfigValuesPromise.then(
+      (pWheelConfigValuesData) => {
+        this._handleReactorsWheelConfigValues(pWheelConfigValuesData);
+        return true;
+      },
+      (pWheelConfigValuesMsg) => {
+        this._handleReactorsWheelConfigValues(
+          JSON.stringify(pWheelConfigValuesMsg),
+        );
+        return false;
+      },
+    );
   }
 
   _handleReactorsWheelConfigValues (pWheelConfigValuesData) {
@@ -58,8 +62,12 @@ export class ReactorsPanel extends Panel {
       this._addReactor(eventTag, reactorsMap[eventTag]);
     }
 
-    const txt = Utils.txtZeroOneMany(reactorsArr.length,
-      "No reactors", "{0} reactor", "{0} reactors");
+    const txt = Utils.txtZeroOneMany(
+      reactorsArr.length,
+      "No reactors",
+      "{0} reactor",
+      "{0} reactors",
+    );
     this.setMsg(txt);
   }
 

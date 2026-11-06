@@ -31,6 +31,14 @@ export class MinionsPanel extends Panel {
 
   onShow () {
     this.nrMinions = 0;
+    this.nrOnline = 0;
+    this.nrOffline = 0;
+
+    // 1. Instant UI from cache
+    const cachedMinions = this.router.minionRegistry.getAll();
+    if (Object.keys(cachedMinions).length > 0) {
+      this.updateMinions(cachedMinions);
+    }
 
     const useCacheGrains = Utils.getStorageItemBoolean("session", "use_cache_for_grains", false);
     this.setWarningText("info", useCacheGrains ? "the content of this screen is based on cached grains info, minion status or grain info may not be accurate" : "");
@@ -62,6 +70,7 @@ export class MinionsPanel extends Panel {
       }
 
       localGrainsItemsPromise.then((pLocalGrainsItemsData) => {
+        // IMPORTANT: We pass the raw API response to updateMinions so it can upsert into registry
         this.updateMinions(pLocalGrainsItemsData);
         return true;
       }, (pLocalGrainsItemsMsg) => {
@@ -81,14 +90,13 @@ export class MinionsPanel extends Panel {
     }, (pWheelKeyListAllMsg) => {
       this._handleMinionsWheelKeyListAll(JSON.stringify(pWheelKeyListAllMsg));
       if (wheelMinionsConnectedPromise != null) {
-        Utils.ignorePromise(wheelMinionsConnectedPromise);
+        Utils.ignorePromise(wheelMiniosConnectedPromise);
       }
       Utils.ignorePromise(localGrainsItemsPromise);
       Utils.ignorePromise(runnerManageVersionsPromise);
       return false;
     });
   }
-
   _handleMinionsWheelKeyListAll (pWheelKeyListAll) {
     if (this.showErrorRowInstead(pWheelKeyListAll)) {
       return;
@@ -772,4 +780,60 @@ export class MinionsPanel extends Panel {
       }
     }
   }
+
+  updateMinions (pData) {
+    if (!pData) {
+      return;
+    }
+
+    let minions;
+    let minionsDict = Utils.getStorageItemObject("session", "minions_txt");
+
+    if (pData.return && pData.return[0]) {
+      // It's a raw API response. We need to upsert it into the registry.
+      minions = pData.return[0];
+      const minionIds = Object.keys(minions).sort();
+
+      this.nrOnline = 0;
+      this.nrOffline = 0;
+
+      for (const minionId of minionIds) {
+        const minionInfo = minions[minionId];
+
+        if (minionInfo === false) {
+          this.router.minionRegistry.upsert(minionId, { "status": "offline" });
+          this.updateOfflineMinion(minionId, minionsDict);
+          this.nrOffline += 1;
+        } else {
+          // Upsert the fresh data and then update the UI with the merged result
+          const updatedData = this.router.minionRegistry.upsert(minionId, minionInfo);
+          this.updateMinion(updatedData, minionId, minions);
+          this.nrOnline += 1;
+        }
+      }
+    } else {
+      // It's already the registry object (from cache). Just update the UI.
+      minions = pData;
+      const minionIds = Object.keys(minions).sort();
+
+      this.nrOnline = 0;
+      this.nrOffline = 0;
+
+      for (const minionId of minionIds) {
+        const minionInfo = minions[minionId];
+
+        if (minionInfo.status === "offline") {
+          this.updateOfflineMinion(minionId, minionsDict);
+          this.nrOffline += 1;
+        } else {
+          this.updateMinion(minionInfo, minionId, minions);
+          this.nrOnline += 1;
+        }
+      }
+    }
+
+    this.updateFooter();
+  }
+
+
 }

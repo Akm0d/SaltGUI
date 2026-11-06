@@ -1,13 +1,12 @@
-import {Output} from "./Output.js";
-import {OutputHighstateSummaryOriginal} from "./OutputHighstateSummaryOriginal.js";
-import {OutputHighstateSummarySaltGui} from "./OutputHighstateSummarySaltGui.js";
-import {OutputHighstateTaskFull} from "./OutputHighstateTaskFull.js";
-import {OutputHighstateTaskSaltGui} from "./OutputHighstateTaskSaltGui.js";
-import {OutputHighstateTaskTerse} from "./OutputHighstateTaskTerse.js";
-import {Utils} from "../Utils.js";
+import { Output } from "./Output.js";
+import { OutputHighstateSummaryOriginal } from "./OutputHighstateSummaryOriginal.js";
+import { OutputHighstateSummarySaltGui } from "./OutputHighstateSummarySaltGui.js";
+import { OutputHighstateTaskFull } from "./OutputHighstateTaskFull.js";
+import { OutputHighstateTaskSaltGui } from "./OutputHighstateTaskSaltGui.js";
+import { OutputHighstateTaskTerse } from "./OutputHighstateTaskTerse.js";
+import { Utils } from "../Utils.js";
 
 export class OutputHighstate {
-
   static isHighStateOutput (pCommand, pResponse) {
     if (typeof pResponse !== "object") {
       return false;
@@ -66,11 +65,13 @@ export class OutputHighstate {
   }
 
   static getHighStateOutput (pMinionId, pTasks, pJobId) {
-
     const div = Utils.createDiv();
 
     // collapse states when requested
-    const stateCompressIds = Utils.getStorageItemBoolean("session", "state_compress_ids");
+    const stateCompressIds = Utils.getStorageItemBoolean(
+      "session",
+      "state_compress_ids",
+    );
     let tasks = pTasks;
     if (stateCompressIds) {
       tasks = {};
@@ -86,7 +87,10 @@ export class OutputHighstate {
           }
           // min() of start_time
           if (task["start_time"]) {
-            tasks[key]["start_time"] = Math.min(tasks[key]["start_time"], task["start_time"]);
+            tasks[key]["start_time"] = Math.min(
+              tasks[key]["start_time"],
+              task["start_time"],
+            );
           }
         } else {
           // first time we see an entry, use all details and start counting at 1
@@ -106,7 +110,6 @@ export class OutputHighstate {
     let hidden = 0;
     let nr = 0;
     for (const task of tasks) {
-
       nr += 1;
 
       if (task.duration) {
@@ -145,15 +148,43 @@ export class OutputHighstate {
 
       let taskSpan;
       if (Output.isStateOutputSelected("terse")) {
-        taskSpan = OutputHighstateTaskTerse.getStateOutput(task, taskName, functionName);
+        taskSpan = OutputHighstateTaskTerse.getStateOutput(
+          task,
+          taskName,
+          functionName,
+        );
       } else if (Output.isStateOutputSelected("mixed") && task.result) {
-        taskSpan = OutputHighstateTaskTerse.getStateOutput(task, taskName, functionName);
-      } else if (Output.isStateOutputSelected("changes") && task.result && nrChanges) {
-        taskSpan = OutputHighstateTaskTerse.getStateOutput(task, taskName, functionName);
+        taskSpan = OutputHighstateTaskTerse.getStateOutput(
+          task,
+          taskName,
+          functionName,
+        );
+      } else if (
+        Output.isStateOutputSelected("changes") &&
+        task.result &&
+        nrChanges
+      ) {
+        taskSpan = OutputHighstateTaskTerse.getStateOutput(
+          task,
+          taskName,
+          functionName,
+        );
       } else if (Output.isOutputFormatAllowed("saltguihighstate")) {
-        taskSpan = OutputHighstateTaskSaltGui.getStateOutput(task, taskId, taskName, functionName, pMinionId, pJobId);
+        taskSpan = OutputHighstateTaskSaltGui.getStateOutput(
+          task,
+          taskId,
+          taskName,
+          functionName,
+          pMinionId,
+          pJobId,
+        );
       } else {
-        taskSpan = OutputHighstateTaskFull.getStateOutput(task, taskId, taskName, functionName);
+        taskSpan = OutputHighstateTaskFull.getStateOutput(
+          task,
+          taskId,
+          taskName,
+          functionName,
+        );
       }
 
       taskSpan.classList.add(Output.getTaskClass(task));
@@ -164,16 +195,36 @@ export class OutputHighstate {
       } else if (nrChanges) {
         changesSummary += 1;
       }
-      const taskDiv = Utils.createDiv("", "", Utils.getIdFromMinionId(pMinionId + "." + nr));
+      const taskDiv = Utils.createDiv(
+        "",
+        "",
+        Utils.getIdFromMinionId(pMinionId + "." + nr),
+      );
       taskDiv.append(taskSpan);
 
       div.append(taskDiv);
     }
 
     if (Output.isOutputFormatAllowed("saltguihighstate")) {
-      OutputHighstateSummarySaltGui.addSummarySpan(div, succeeded, failed, skipped, totalMilliSeconds, changesDetail, hidden);
+      OutputHighstateSummarySaltGui.addSummarySpan(
+        div,
+        succeeded,
+        failed,
+        skipped,
+        totalMilliSeconds,
+        changesDetail,
+        hidden,
+      );
     } else {
-      OutputHighstateSummaryOriginal.addSummarySpan(div, pMinionId, succeeded, failed, skipped, totalMilliSeconds, changesSummary);
+      OutputHighstateSummaryOriginal.addSummarySpan(
+        div,
+        pMinionId,
+        succeeded,
+        failed,
+        skipped,
+        totalMilliSeconds,
+        changesSummary,
+      );
     }
 
     return div;

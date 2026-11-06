@@ -1,7 +1,7 @@
 /* global */
 
-import {Character} from "./Character.js";
-import {Utils} from "./Utils.js";
+import { Character } from "./Character.js";
+import { Utils } from "./Utils.js";
 
 // each menu item has a 2 properties
 // 1: the title
@@ -21,11 +21,9 @@ import {Utils} from "./Utils.js";
 // remember to call verifyApp() when that is potentially the case
 
 export class DropDownMenu {
-
   // Creates an empty dropdown menu
   // The visual clue for the menu is added to the given element
   constructor (pParentElement, pStyle) {
-
     // allow reduced code on the caller side
     if (pParentElement.tagName === "TR") {
       const td = Utils.createTd();
@@ -33,21 +31,35 @@ export class DropDownMenu {
       pParentElement = td;
     }
 
-    this.menuDropdown = Utils.createDiv(["run-command-button", "no-search", "no-print"]);
+    this.menuDropdown = Utils.createDiv([
+      "run-command-button",
+      "no-search",
+      "no-print",
+    ]);
 
     if (pParentElement.id === "cmd-box") {
       this.menuButton = Utils.createDiv("", Character.OPEN_BOOK);
-    } else if (pParentElement.classList && pParentElement.classList.contains("minion-output")) {
+    } else if (
+      pParentElement.classList &&
+      pParentElement.classList.contains("minion-output")
+    ) {
       this.menuButton = Utils.createSpan("", Character.CH_HAMBURGER);
     } else if (pParentElement.id.endsWith("-settings")) {
       this.menuButton = Utils.createSpan("", Character.GEAR);
-    } else if (pParentElement.classList && pParentElement.classList.contains("search-menu-and-field")) {
+    } else if (
+      pParentElement.classList &&
+      pParentElement.classList.contains("search-menu-and-field")
+    ) {
       this.menuButton = Utils.createSpan("", Character.GEAR);
     } else {
       // assume it will be a command menu
       this.menuButton = Utils.createDiv("", Character.CH_HAMBURGER);
     }
-    this.menuButton.classList.add("small-button", "small-button-for-hover", "menu-dropdown");
+    this.menuButton.classList.add(
+      "small-button",
+      "small-button-for-hover",
+      "menu-dropdown",
+    );
     if (pStyle) {
       this.menuButton.classList.add(pStyle + "-small-button");
     }
@@ -107,16 +119,18 @@ export class DropDownMenu {
       }
     }
     // hide the menu when it has no visible menu-items
-    const displayVisible = this.menuDropdown.tagName === "TD" ? "table-cell" : "inline-block";
+    const displayVisible =
+      this.menuDropdown.tagName === "TD" ? "table-cell" : "inline-block";
     const displayInvisible = "none";
-    this.menuDropdown.style.display = visibleCount > 0 ? displayVisible : displayInvisible;
+    this.menuDropdown.style.display =
+      visibleCount > 0 ? displayVisible : displayInvisible;
   }
 
   static _sanitizeMenuItemTitle (pTitle) {
-    return pTitle.
-      replace(/ /g, Character.NO_BREAK_SPACE).
-      replace(/-/g, Character.NON_BREAKING_HYPHEN).
-      replace(/[.][.][.]/g, Character.HORIZONTAL_ELLIPSIS);
+    return pTitle
+      .replace(/ /g, Character.NO_BREAK_SPACE)
+      .replace(/-/g, Character.NON_BREAKING_HYPHEN)
+      .replace(/[.][.][.]/g, Character.HORIZONTAL_ELLIPSIS);
   }
 
   // Add a menu item at the end of this dropdown menu
@@ -126,7 +140,10 @@ export class DropDownMenu {
   // This allows dynamic menuitem titles (use menuitem.innerText)
   // or visibility (use menuitem.style.display = "none"/"inline-block")
   addMenuItem (pTitle, pCallBack, pValue) {
-    const button = Utils.createDiv("run-command-button", Character.HORIZONTAL_ELLIPSIS);
+    const button = Utils.createDiv(
+      "run-command-button",
+      Character.HORIZONTAL_ELLIPSIS,
+    );
     if (pValue) {
       button._value = pValue;
     }
