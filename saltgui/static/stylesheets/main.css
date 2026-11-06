@@ -219,6 +219,7 @@ h1 {
   .fullmenu {
     display: inline-block;
   }
+
   .minimenu {
     display: none;
   }
@@ -228,6 +229,7 @@ h1 {
   .fullmenu {
     display: none;
   }
+
   .minimenu {
     display: inline-block;
   }
